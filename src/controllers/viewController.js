@@ -4,6 +4,24 @@ const Booking = require('../models/bookingModel');
 const Review = require('../models/reviewModel');
 const AppError = require('../utils/appError');
 
+// Ana sayfa
+exports.getOverview = async (req, res, next) => {
+  try {
+    // 1) Öne çıkan turları getir (puanı yüksek olanlardan 6 adet)
+    const tours = await Tour.find()
+      .sort('-ratingsAverage -ratingsQuantity')
+      .limit(6);
+    
+    // 2) Modern şablonu kullan
+    res.status(200).render('overview-modern', {
+      title: 'Natours | Öne Çıkan Turlar',
+      tours
+    });
+  } catch (err) {
+    next(new AppError(err.message, 404));
+  }
+};
+
 // Modern görünümlü ana sayfa
 exports.getModernOverview = async (req, res, next) => {
   try {
