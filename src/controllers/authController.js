@@ -39,10 +39,7 @@ const createSendToken = (user, statusCode, res) => {
   // Remove password from output
   user.password = undefined;
 
-  // Başarılı giriş sonrası yönlendirme URL'si
-  const redirectUrl = req.session.returnTo || '/modern';
-  
-  // Eğer API isteği değilse yönlendir
+  // API isteği ise JSON yanıtı gönder
   if (req.originalUrl.startsWith('/api')) {
     return res.status(statusCode).json({
       status: 'success',
@@ -53,8 +50,14 @@ const createSendToken = (user, statusCode, res) => {
     });
   }
   
-  // Tarayıcı isteği ise yönlendir
+  // Tarayıcı isteği ise daima /modern sayfasına yönlendir
+  const redirectUrl = '/modern';
+  
+  // Tarayıcı isteği ise daima /modern sayfasına yönlendir
   res.redirect(redirectUrl);
+  
+  // Giriş sonrası returnTo bilgisini temizle
+  if (req.session) req.session.returnTo = undefined;
 };
 
 // Kullanıcı kaydı
