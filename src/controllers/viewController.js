@@ -47,8 +47,8 @@ exports.getTour = async (req, res, next) => {
 
 // Giriş sayfası
 exports.getLoginForm = (req, res) => {
-  // Kullanıcı zaten giriş yapmışsa modern sayfaya yönlendir
-  if (res.locals.user) return res.redirect('/modern');
+  // Kullanıcı zaten giriş yapmışsa ana sayfaya yönlendir
+  if (res.locals.user) return res.redirect('/');
   
   // Önceki sayfayı kaydet (giriş sonrası buraya dönmek için)
   if (req.headers.referer && !req.headers.referer.includes('/login') && !req.headers.referer.includes('/signup')) {
@@ -62,8 +62,8 @@ exports.getLoginForm = (req, res) => {
 
 // Kayıt sayfası
 exports.getSignupForm = (req, res) => {
-  // Kullanıcı zaten giriş yapmışsa modern sayfaya yönlendir
-  if (res.locals.user) return res.redirect('/modern');
+  // Kullanıcı zaten giriş yapmışsa ana sayfaya yönlendir
+  if (res.locals.user) return res.redirect('/');
   
   // Önceki sayfayı kaydet (kayıt sonrası buraya dönmek için)
   if (req.headers.referer && !req.headers.referer.includes('/login') && !req.headers.referer.includes('/signup')) {

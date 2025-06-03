@@ -50,8 +50,8 @@ const createSendToken = (user, statusCode, req, res) => {
     });
   }
   
-  // Tarayıcı isteği ise daima /modern sayfasına yönlendir
-  const redirectUrl = '/modern';
+  // Tarayıcı isteği ise daima ana sayfaya yönlendir
+  const redirectUrl = '/';
   
   // Tarayıcı isteği ise daima /modern sayfasına yönlendir
   res.redirect(redirectUrl);

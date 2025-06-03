@@ -17,7 +17,7 @@ export const login = async (email, password) => {
     if (res.data.status === 'success') {
       showAlert('success', 'Başarıyla giriş yaptınız!');
       window.setTimeout(() => {
-        location.assign('/modern');
+        location.assign('/');
       }, 1500);
     }
   } catch (err) {
@@ -54,7 +54,7 @@ export const signup = async (name, email, password, passwordConfirm) => {
     if (res.data.status === 'success') {
       showAlert('success', 'Hesabınız başarıyla oluşturuldu!');
       window.setTimeout(() => {
-        location.assign('/modern');
+        location.assign('/');
       }, 1500);
     }
   } catch (err) {

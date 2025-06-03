@@ -7,11 +7,8 @@ const router = express.Router();
 // Her istekte oturum durumunu kontrol et
 router.use(authController.isLoggedIn);
 
-// Ana sayfa yönlendirmesi
-router.get('/', (req, res) => res.redirect('/modern'));
-
-// Herkesin erişebileceği rotalar
-router.get('/modern', viewController.getModernOverview);
+// Ana sayfa - Modern görünüm
+router.get('/', viewController.getModernOverview);
 router.get('/tours/:slug', viewController.getTour);
 router.get('/login', viewController.getLoginForm);
 router.get('/signup', viewController.getSignupForm);
