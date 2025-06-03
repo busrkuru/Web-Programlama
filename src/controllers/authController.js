@@ -12,7 +12,7 @@ const signToken = id => {
 };
 
 // Oluşturulan token'ı cookie olarak gönderme
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
   const cookieOptions = {
     expires: new Date(
@@ -71,7 +71,7 @@ exports.signup = async (req, res, next) => {
       role: req.body.role || 'user'
     });
 
-    createSendToken(newUser, 201, res);
+    createSendToken(newUser, 201, req, res);
   } catch (err) {
     next(new AppError(err.message, 400));
   }
@@ -94,8 +94,8 @@ exports.login = async (req, res, next) => {
       return next(new AppError('Hatalı email veya şifre', 401));
     }
 
-    // 3) Her şey doğruysa token gönder
-    createSendToken(user, 200, res);
+    // 3) Her şey doğruysa, token oluştur ve giriş yap
+    createSendToken(user, 200, req, res);
   } catch (err) {
     next(new AppError(err.message, 400));
   }
