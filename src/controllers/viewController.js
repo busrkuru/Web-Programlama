@@ -7,22 +7,6 @@ const AppError = require('../utils/appError');
 // Ana sayfa
 exports.getOverview = async (req, res, next) => {
   try {
-    // 1) Tüm turları getir
-    const tours = await Tour.find();
-
-    // 2) Şablonu oluştur
-    res.status(200).render('overview', {
-      title: 'Tüm Turlar',
-      tours
-    });
-  } catch (err) {
-    next(new AppError(err.message, 404));
-  }
-};
-
-// Modern görünümlü ana sayfa
-exports.getModernOverview = async (req, res, next) => {
-  try {
     // 1) Öne çıkan turları getir (puanı yüksek olanlardan 6 adet)
     const tours = await Tour.find()
       .sort('-ratingsAverage -ratingsQuantity')

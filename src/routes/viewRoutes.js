@@ -8,8 +8,7 @@ const router = express.Router();
 router.use(authController.isLoggedIn);
 
 // Herkesin erişebileceği rotalar
-router.get('/', viewController.getModernOverview);
-router.get('/modern', (req, res) => res.redirect('/'));
+router.get('/', viewController.getOverview);
 router.get('/tours/:slug', viewController.getTour);
 router.get('/login', viewController.getLoginForm);
 router.get('/signup', viewController.getSignupForm);
