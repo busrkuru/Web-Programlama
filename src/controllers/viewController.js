@@ -4,8 +4,8 @@ const Booking = require('../models/bookingModel');
 const Review = require('../models/reviewModel');
 const AppError = require('../utils/appError');
 
-// Ana sayfa
-exports.getOverview = async (req, res, next) => {
+// Modern görünümlü ana sayfa
+exports.getModernOverview = async (req, res, next) => {
   try {
     // 1) Öne çıkan turları getir (puanı yüksek olanlardan 6 adet)
     const tours = await Tour.find()
@@ -47,8 +47,8 @@ exports.getTour = async (req, res, next) => {
 
 // Giriş sayfası
 exports.getLoginForm = (req, res) => {
-  // Kullanıcı zaten giriş yapmışsa ana sayfaya yönlendir
-  if (res.locals.user) return res.redirect('/');
+  // Kullanıcı zaten giriş yapmışsa modern sayfaya yönlendir
+  if (res.locals.user) return res.redirect('/modern');
   
   // Önceki sayfayı kaydet (giriş sonrası buraya dönmek için)
   if (req.headers.referer && !req.headers.referer.includes('/login') && !req.headers.referer.includes('/signup')) {
@@ -62,8 +62,8 @@ exports.getLoginForm = (req, res) => {
 
 // Kayıt sayfası
 exports.getSignupForm = (req, res) => {
-  // Kullanıcı zaten giriş yapmışsa ana sayfaya yönlendir
-  if (res.locals.user) return res.redirect('/');
+  // Kullanıcı zaten giriş yapmışsa modern sayfaya yönlendir
+  if (res.locals.user) return res.redirect('/modern');
   
   // Önceki sayfayı kaydet (kayıt sonrası buraya dönmek için)
   if (req.headers.referer && !req.headers.referer.includes('/login') && !req.headers.referer.includes('/signup')) {

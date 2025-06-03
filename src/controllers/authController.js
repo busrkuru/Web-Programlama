@@ -40,7 +40,7 @@ const createSendToken = (user, statusCode, res) => {
   user.password = undefined;
 
   // Başarılı giriş sonrası yönlendirme URL'si
-  const redirectUrl = req.session.returnTo || '/';
+  const redirectUrl = req.session.returnTo || '/modern';
   
   // Eğer API isteği değilse yönlendir
   if (req.originalUrl.startsWith('/api')) {
@@ -111,7 +111,7 @@ exports.logout = (req, res) => {
     // Session'ı da temizle
     req.session.destroy();
     
-    return res.redirect('/');
+    return res.redirect('/modern');
   }
   
   // API isteği ise JSON yanıtı gönder
