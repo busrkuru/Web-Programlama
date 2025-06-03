@@ -1,0 +1,42 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      h1.heading-secondary.ma-bt-md Rezervasyonlarınız
+      if bookings.length
+        each booking in bookings
+          .card
+            .card__header
+              .card__picture
+                .card__picture-overlay &nbsp;
+                img.card__picture-img(src=`/img/tours/${booking.tour.imageCover}`, alt=`${booking.tour.name}`)
+              h3.heading-tertirary
+                span= booking.tour.name
+
+            .card__details
+              h4.card__sub-heading #{booking.tour.difficulty} #{booking.tour.duration}-günlük tur
+              p.card__text= booking.tour.summary
+              .card__data
+                svg.card__icon
+                  use(xlink:href='/img/icons.svg#icon-map-pin')
+                span= booking.tour.startLocation.description
+              .card__data
+                svg.card__icon
+                  use(xlink:href='/img/icons.svg#icon-calendar')
+                span= new Date(booking.startDate).toLocaleString('tr-TR', {day: 'numeric', month: 'long', year: 'numeric'})
+              .card__data
+                svg.card__icon
+                  use(xlink:href='/img/icons.svg#icon-user')
+                span= `${booking.participants} kişi`
+              .card__data
+                svg.card__icon
+                  use(xlink:href='/img/icons.svg#icon-credit-card')
+                span= `${booking.price} ₺ kişi başı`
+      else
+        .error
+          .error__title
+            h2.heading-secondary Henüz rezervasyonunuz bulunmuyor!
+          .error__msg
+            p Rezervasyon yapmak için hemen turlarımıza göz atın.
+            a.btn.btn--green(href='/') Tüm Turlar

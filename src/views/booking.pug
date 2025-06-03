@@ -1,0 +1,52 @@
+extends base
+
+block content
+  main.main
+    .booking-form
+      h2.heading-secondary.ma-bt-lg Tur rezervasyonunuzu tamamlayın
+      
+      .booking-form__tour-details
+        .booking-form__tour-info
+          h3.booking-form__tour-name #{tour.name}
+          .booking-form__tour-data
+            .booking-form__data-item
+              svg.booking-form__icon
+                use(xlink:href='/img/icons.svg#icon-map-pin')
+              span #{tour.startLocation.description}
+            .booking-form__data-item
+              svg.booking-form__icon
+                use(xlink:href='/img/icons.svg#icon-calendar')
+              span #{tour.duration} gün
+            .booking-form__data-item
+              svg.booking-form__icon
+                use(xlink:href='/img/icons.svg#icon-trending-up')
+              span #{tour.difficulty}
+            .booking-form__data-item
+              svg.booking-form__icon
+                use(xlink:href='/img/icons.svg#icon-user')
+              span Max: #{tour.maxGroupSize} kişi
+        
+        .booking-form__tour-price
+          p.booking-form__price
+            span.booking-form__price-value #{tour.price} ₺
+            span.booking-form__price-text  / kişi
+      
+      form.form.form--booking(data-tour-id=`${tour.id}`)
+        .form__group
+          label.form__label(for='participants') Katılımcı Sayısı
+          input#participants.form__input(type='number', min='1', max=`${tour.maxGroupSize}`, value='1', required)
+        
+        .form__group.ma-bt-md
+          label.form__label(for='date') Tur Tarihi
+          select#date.form__input(required)
+            each date in tour.startDates
+              - const formattedDate = new Date(date).toLocaleString('tr-TR', {day: 'numeric', month: 'long', year: 'numeric'})
+              option(value=date) #{formattedDate}
+        
+        .form__group.form__group--total
+          .booking-form__total
+            h4.booking-form__total-text Toplam: 
+            span.booking-form__total-value #{tour.price} ₺
+        
+        .form__group
+          button.btn.btn--green.btn--book Rezervasyon Yap

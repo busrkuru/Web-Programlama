@@ -1,0 +1,118 @@
+extends base
+
+block content
+  // Hero Section
+  .hero
+    .hero__content
+      h1.hero__title Hayallerinizi Ertelemeyin
+      p.hero__subtitle Unutulmaz tur deneyimleri için keşfe başlayın
+      a.btn.btn--orange(href="#featured-tours") Turları Keşfet
+
+  // Featured Tours Section
+  section#featured-tours.featured
+    .container
+      h2.section-title Öne Çıkan Turlar
+      p.section-subtitle En çok beğenilen ve popüler tur seçeneklerimiz
+      
+      .tour-grid
+        each tour in tours
+          .tour-card
+            .tour-card__ribbon
+              if tour.price < 4000
+                span İndirimli
+              else if tour.ratingsAverage >= 4.5
+                span Popüler
+            .tour-card__image
+              img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+              .tour-card__duration
+                i.fas.fa-clock
+                span #{tour.duration} Gün
+            .tour-card__content
+              .tour-card__rating
+                .tour-card__stars
+                  - const rating = Math.round(tour.ratingsAverage)
+                  - for (let i = 1; i <= 5; i++)
+                    if i <= rating
+                      i.fas.fa-star
+                    else
+                      i.far.fa-star
+                span.tour-card__reviews #{tour.ratingsQuantity} değerlendirme
+              h3.tour-card__title= tour.name
+              .tour-card__info
+                .tour-card__location
+                  i.fas.fa-map-marker-alt
+                  span= tour.startLocation.description
+                .tour-card__group
+                  i.fas.fa-users
+                  span Maks #{tour.maxGroupSize} kişi
+              .tour-card__footer
+                .tour-card__price
+                  span.tour-card__price-value #{tour.price.toLocaleString('tr-TR')}₺
+                  span.tour-card__price-text kişi başı
+                a.btn.btn--small.btn--orange(href=`/tours/${tour.slug}`) İncele
+
+  // Promotions Section
+  section.promotions
+    .container
+      h2.section-title Fırsat Turları
+      p.section-subtitle Sınırlı zamanlı fırsatları kaçırmayın
+      
+      .promotion-cards
+        .promotion-card
+          .promotion-card__content
+            h3.promotion-card__title Erken Rezervasyon İndirimi
+            p.promotion-card__text 3 ay önceden yapacağınız rezervasyonlarda %15'e varan indirimler
+            span.promotion-card__tag Sınırlı Süre
+            a.btn.btn--white.btn--small(href="#") Detaylar
+          .promotion-card__image
+            img(src="/img/promotions/early-booking.jpg" alt="Erken Rezervasyon")
+
+        .promotion-card
+          .promotion-card__content
+            h3.promotion-card__title Bayram Özel
+            p.promotion-card__text Bayram tatillerine özel turlarımızda %10 indirim
+            span.promotion-card__tag Özel Fırsat
+            a.btn.btn--white.btn--small(href="#") Detaylar
+          .promotion-card__image
+            img(src="/img/promotions/holiday-special.jpg" alt="Bayram Özel")
+            
+  // Testimonials Section
+  section.testimonials
+    .container
+      h2.section-title Misafirlerimiz Ne Diyor?
+      .testimonial-slider
+        .testimonial
+          .testimonial__image
+            img(src="/img/users/default.jpg" alt="Kullanıcı")
+          .testimonial__content
+            .testimonial__rating
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+            p.testimonial__text "Kapadokya Balon Turu hayatımda yaşadığım en güzel deneyimlerden biriydi. Gündoğumunda balonla havalanmak büyüleyiciydi."
+            p.testimonial__author Ayşe Y. - Kapadokya Balon Turu
+
+        .testimonial
+          .testimonial__image
+            img(src="/img/users/default.jpg" alt="Kullanıcı")
+          .testimonial__content
+            .testimonial__rating
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star
+              i.fas.fa-star-half
+            p.testimonial__text "Efes Antik Kenti Turu ile muhteşem bir tarih yolculuğuna çıktık. Rehberimiz çok bilgiliydi ve her anı dolu dolu geçti."
+            p.testimonial__author Mehmet K. - Efes Antik Kenti Turu
+
+  // Newsletter Section
+  section.newsletter
+    .container
+      .newsletter__content
+        h2.newsletter__title Fırsatlardan Haberdar Olun
+        p.newsletter__text Özel teklifler, yeni turlar ve seyahat ilhamı için bültenimize kaydolun
+        form.newsletter__form
+          input.newsletter__input(type="email" placeholder="E-posta adresiniz")
+          button.btn.btn--orange Abone Ol

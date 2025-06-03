@@ -1,0 +1,86 @@
+extends base
+
+block content
+  main.main
+    .user-view
+      nav.user-view__menu
+        ul.side-nav
+          li.side-nav--active
+            a(href='#')
+              svg
+                use(xlink:href='/img/icons.svg#icon-settings')
+              | Hesabım
+          li
+            a(href='/my-bookings')
+              svg
+                use(xlink:href='/img/icons.svg#icon-briefcase')
+              | Rezervasyonlarım
+          li
+            a(href='/my-reviews')
+              svg
+                use(xlink:href='/img/icons.svg#icon-star')
+              | Yorumlarım
+          li
+            a(href='#')
+              svg
+                use(xlink:href='/img/icons.svg#icon-credit-card')
+              | Ödeme Yöntemlerim
+
+        - if(user.role === 'admin')
+          .admin-nav
+            h5.admin-nav__heading Admin
+            ul.side-nav
+              li
+                a(href='/admin')
+                  svg
+                    use(xlink:href='/img/icons.svg#icon-map')
+                  | Turları Yönet
+              li
+                a(href='/admin')
+                  svg
+                    use(xlink:href='/img/icons.svg#icon-users')
+                  | Kullanıcıları Yönet
+              li
+                a(href='/admin')
+                  svg
+                    use(xlink:href='/img/icons.svg#icon-star')
+                  | Yorumları Yönet
+              li
+                a(href='/admin')
+                  svg
+                    use(xlink:href='/img/icons.svg#icon-briefcase')
+                  | Rezervasyonları Yönet
+
+      .user-view__content
+        .user-view__form-container
+          h2.heading-secondary.ma-bt-md Hesap Bilgileriniz
+          form.form.form-user-data
+            .form__group
+              label.form__label(for='name') İsim
+              input#name.form__input(type='text', value=`${user.name}`, required, name='name')
+            .form__group.ma-bt-md
+              label.form__label(for='email') Email
+              input#email.form__input(type='email', value=`${user.email}`, required, name='email')
+            .form__group.form__photo-upload
+              img.form__user-photo(src=`/img/users/${user.photo}`, alt='Kullanıcı fotoğrafı')
+              input.form__upload(type='file', accept='image/*', id='photo', name='photo')
+              label(for='photo') Fotoğraf seç
+            .form__group.right
+              button.btn.btn--small.btn--green Ayarları Kaydet
+
+        .line &nbsp;
+
+        .user-view__form-container
+          h2.heading-secondary.ma-bt-md Şifre Değiştir
+          form.form.form-user-password
+            .form__group
+              label.form__label(for='password-current') Mevcut şifre
+              input#password-current.form__input(type='password', placeholder='••••••••', required, minlength='8')
+            .form__group
+              label.form__label(for='password') Yeni şifre
+              input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+            .form__group.ma-bt-lg
+              label.form__label(for='password-confirm') Yeni şifre (tekrar)
+              input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+            .form__group.right
+              button.btn.btn--small.btn--green.btn--save-password Şifreyi Kaydet

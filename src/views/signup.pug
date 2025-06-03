@@ -1,0 +1,23 @@
+extends base
+
+block content
+  main.main
+    .login-form
+      h2.heading-secondary.ma-bt-lg Yeni hesap oluşturun
+      form.form.form--signup
+        .form__group
+          label.form__label(for='name') Ad Soyad
+          input#name.form__input(type='text', placeholder='Ad Soyad', required)
+        .form__group
+          label.form__label(for='email') Email
+          input#email.form__input(type='email', placeholder='you@example.com', required)
+        .form__group.ma-bt-md
+          label.form__label(for='password') Şifre
+          input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+        .form__group.ma-bt-md
+          label.form__label(for='passwordConfirm') Şifre Tekrarı
+          input#passwordConfirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+        .form__group
+          button.btn.btn--green Kaydol
+        .form__group
+          a.form__link(href="/login") Zaten hesabınız var mı? Giriş yapın

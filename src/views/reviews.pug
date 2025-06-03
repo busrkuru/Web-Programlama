@@ -1,0 +1,35 @@
+extends base
+
+block content
+  main.main
+    .reviews-container
+      h1.heading-secondary.ma-bt-md Yorumlaru0131nu0131z
+      if reviews.length
+        each review in reviews
+          .review-card
+            .review-card__header
+              .review-card__picture
+                .review-card__picture-overlay &nbsp;
+                img.review-card__picture-img(src=`/img/tours/${review.tour.imageCover}`, alt=`${review.tour.name}`)
+              h3.heading-tertirary
+                span= review.tour.name
+
+            .review-card__content
+              p.review-card__text= review.review
+              .review-card__rating
+                each star in [1, 2, 3, 4, 5]
+                  svg.review-card__star(class=`review-card__star--${review.rating >= star ? 'active' : 'inactive'}`)
+                    use(xlink:href='/img/icons.svg#icon-star')
+              .review-card__date
+                span= new Date(review.createdAt).toLocaleString('tr-TR', {day: 'numeric', month: 'long', year: 'numeric'})
+
+              .review-card__actions
+                button.btn.btn--small.btn--edit-review(data-review-id=`${review.id}`) Du00fczenle
+                button.btn.btn--small.btn--delete-review(data-review-id=`${review.id}`) Sil
+      else
+        .error
+          .error__title
+            h2.heading-secondary Henu00fcz yorum yapmadu0131nu0131z!
+          .error__msg
+            p Deneyimlediu011finiz turlara yorum yapmak iu00e7in tur sayfalaru0131nu0131 ziyaret edin.
+            a.btn.btn--green(href='/') Tu00fcm Turlar
