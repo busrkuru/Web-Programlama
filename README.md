@@ -107,9 +107,9 @@ src/
 
 ## Önemli Sayfalar
 
-- Ana Sayfa: `/` veya `/modern`
-- Hakkımızda: `/hakkimizda` veya `/about`
-- İletişim: `/iletisim` veya `/contact`
+- Ana Sayfa: `/` 
+- Hakkımızda: `/about`
+- İletişim: `/contact`
 - Tur Detayı: `/tours/:slug`
 - Kullanıcı Girişi: `/login`
 - Kayıt: `/signup`
