@@ -7,22 +7,18 @@ block content
         nav.admin-view__menu
           ul.side-nav
             li.side-nav--active#tours-nav-item
-              a(href='#')
+              a(href='/manage-tours')
                 svg
                   use(xlink:href='/img/icons.svg#icon-map')
                 | Turlar
             li#users-nav-item
-              a(href='#')
+              a(href='/manage-users')
                 svg
                   use(xlink:href='/img/icons.svg#icon-users')
                 | Kullanıcılar
-            li#reviews-nav-item
-              a(href='#')
-                svg
-                  use(xlink:href='/img/icons.svg#icon-star')
-                | Yorumlar
+
             li#bookings-nav-item
-              a(href='#')
+              a(href='/manage-bookings')
                 svg
                   use(xlink:href='/img/icons.svg#icon-briefcase')
                 | Rezervasyonlar
@@ -31,18 +27,16 @@ block content
         .admin-view__header
           h2.heading-secondary.ma-bt-md Yönetim Paneli
           .admin-stats
-            .admin-stats__item
-              .admin-stats__value= stats.tourCount
+            a.admin-stats__item(href='/manage-tours')
+              .admin-stats__value= stats.totalTours
               .admin-stats__label Toplam Tur
-            .admin-stats__item
-              .admin-stats__value= stats.userCount
+            a.admin-stats__item(href='#users-section' id='total-users-link')
+              .admin-stats__value= stats.totalUsers
               .admin-stats__label Toplam Kullanıcı
-            .admin-stats__item
-              .admin-stats__value= stats.bookingCount
+            a.admin-stats__item(href='/manage-bookings')
+              .admin-stats__value= stats.totalBookings
               .admin-stats__label Toplam Rezervasyon
-            .admin-stats__item
-              .admin-stats__value= stats.reviewCount
-              .admin-stats__label Toplam Yorum
+
         
         .admin-section#tours-section
           .admin-section__header
@@ -79,22 +73,7 @@ block content
               tbody#users-table-body
                 //- JavaScript ile doldurulacak
 
-        .admin-section#reviews-section.hidden
-          .admin-section__header
-            h3.heading-tertiary Yorumlar
-          
-          .admin-section__content
-            table.admin-table
-              thead
-                tr
-                  th ID
-                  th Tur
-                  th Kullanıcı
-                  th Puan
-                  th Yorum
-                  th İşlemler
-              tbody#reviews-table-body
-                //- JavaScript ile doldurulacak
+
 
         .admin-section#bookings-section.hidden
           .admin-section__header

@@ -3,7 +3,7 @@ import '@babel/polyfill';
 import { displayMap } from './mapbox';
 import { login, logout, signup } from './auth';
 import { updateSettings } from './updateSettings';
-import { bookTour } from './booking';
+import { bookTour, updateBookingTotal } from './booking';
 import { showAlert } from './alerts';
 
 // DOM ELEMENTS
@@ -80,6 +80,9 @@ if (userPasswordForm) {
 }
 
 if (bookingForm) {
+  // Sayfa yu00fcklendiu011finde toplam fiyatu0131 gu00fcncelle
+  updateBookingTotal();
+  
   bookingForm.addEventListener('submit', e => {
     e.preventDefault();
     

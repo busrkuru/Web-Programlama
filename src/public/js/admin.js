@@ -337,42 +337,61 @@ const createTourForm = (data) => {
 
 // Kullanıcı formu oluştur
 const createUserForm = (data) => {
+  console.log('Kullanıcı formu oluşturuluyor, veriler:', data);
+  
   return `
     <div class="admin-form-overlay"></div>
     <div class="admin-form-content">
-      <h3 class="heading-tertiary">${data ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Ekle'}</h3>
+      <h3 class="heading-tertiary">${data ? 'Kullan\u0131c\u0131 D\u00fczenle' : 'Yeni Kullan\u0131c\u0131 Ekle'}</h3>
       <form class="admin-form">
+        ${data ? `<input type="hidden" name="id" value="${data._id}">` : ''}
+        
         <div class="form__group">
           <label class="form__label" for="name">Ad Soyad</label>
           <input class="form__input" id="name" name="name" value="${data?.name || ''}" required>
         </div>
+        
         <div class="form__group">
           <label class="form__label" for="email">Email</label>
           <input class="form__input" id="email" name="email" type="email" value="${data?.email || ''}" required>
         </div>
+        
         <div class="form__group">
           <label class="form__label" for="role">Rol</label>
           <select class="form__input" id="role" name="role" required>
-            <option value="">Seçiniz</option>
-            <option value="user" ${data?.role === 'user' ? 'selected' : ''}>Kullanıcı</option>
+            <option value="">Se\u00e7iniz</option>
+            <option value="user" ${data?.role === 'user' ? 'selected' : ''}>Kullan\u0131c\u0131</option>
             <option value="guide" ${data?.role === 'guide' ? 'selected' : ''}>Rehber</option>
-            <option value="lead-guide" ${data?.role === 'lead-guide' ? 'selected' : ''}>Baş Rehber</option>
+            <option value="lead-guide" ${data?.role === 'lead-guide' ? 'selected' : ''}>Ba\u015f Rehber</option>
             <option value="admin" ${data?.role === 'admin' ? 'selected' : ''}>Admin</option>
           </select>
         </div>
+        
         ${!data ? `
         <div class="form__group">
-          <label class="form__label" for="password">Şifre</label>
+          <label class="form__label" for="password">\u015eifre</label>
           <input class="form__input" id="password" name="password" type="password" required>
         </div>
+        
         <div class="form__group">
-          <label class="form__label" for="passwordConfirm">Şifre Tekrarı</label>
+          <label class="form__label" for="passwordConfirm">\u015eifre Tekrar\u0131</label>
           <input class="form__input" id="passwordConfirm" name="passwordConfirm" type="password" required>
         </div>
-        ` : ''}
+        ` : `
+        <div class="form__group">
+          <label class="form__label" for="password">\u015eifre (Bo\u015f b\u0131rak\u0131rsan\u0131z de\u011fi\u015fmez)</label>
+          <input class="form__input" id="password" name="password" type="password">
+        </div>
+        
+        <div class="form__group">
+          <label class="form__label" for="passwordConfirm">\u015eifre Tekrar\u0131</label>
+          <input class="form__input" id="passwordConfirm" name="passwordConfirm" type="password">
+        </div>
+        `}
+        
         <div class="form__group form__group--buttons">
-          <button type="button" class="btn btn--small btn--cancel">İptal</button>
-          <button type="submit" class="btn btn--small btn--green">${data ? 'Güncelle' : 'Ekle'}</button>
+          <button type="button" class="btn btn--small btn--cancel">\u0130ptal</button>
+          <button type="submit" class="btn btn--small btn--green">${data ? 'G\u00fcncelle' : 'Ekle'}</button>
         </div>
       </form>
     </div>
@@ -384,19 +403,50 @@ const submitForm = async (type, id) => {
   try {
     const form = document.querySelector('.admin-form');
     const formData = {};
+    let actualId = id;
     
     // Form verilerini topla
     new FormData(form).forEach((value, key) => {
+      // Gizli id alanı varsa, onu kullan
+      if (key === 'id' && value) {
+        actualId = value;
+        return; // id'yi formData'ya ekleme
+      }
+      
+      // Boş şifre alanlarını formData'ya ekleme
+      if ((key === 'password' || key === 'passwordConfirm') && value === '') {
+        return;
+      }
+      
       formData[key] = value;
     });
+    
+    console.log('Form verileri:', formData);
+    console.log('Kullanılacak ID:', actualId);
     
     let url = `/api/v1/${type}s`;
     let method = 'POST';
     
-    if (id) {
-      url = `${url}/${id}`;
+    if (actualId) {
+      url = `${url}/${actualId}`;
       method = 'PATCH';
+      console.log('Düzenleme modu - URL:', url);
+    } else {
+      console.log('Yeni ekleme modu - URL:', url);
     }
+    
+    // Kullanıcı düzenleme işlemi için özel kontrol
+    if (type === 'user' && formData.password) {
+      // Şifre alanları eşleşmiyorsa hata göster
+      if (formData.password !== formData.passwordConfirm) {
+        showAlert('error', 'Şifreler eşleşmiyor!');
+        return;
+      }
+    }
+    
+    // İstek gönder
+    console.log(`${method} isteği gönderiliyor:`, url);
+    console.log('Gönderilecek veriler:', formData);
     
     const res = await axios({
       method,
@@ -404,8 +454,14 @@ const submitForm = async (type, id) => {
       data: formData
     });
     
+    console.log('Sunucu yanıtı:', res.data);
+    
     if (res.data.status === 'success') {
-      showAlert('success', `${type.charAt(0).toUpperCase() + type.slice(1)} ${id ? 'güncellendi' : 'oluşturuldu'}!`);
+      const message = actualId 
+        ? `${type.charAt(0).toUpperCase() + type.slice(1)} başarıyla güncellendi!` 
+        : `${type.charAt(0).toUpperCase() + type.slice(1)} başarıyla oluşturuldu!`;
+      
+      showAlert('success', message);
       
       // Formu kapat
       document.querySelector('.admin-form-container').remove();
@@ -415,7 +471,8 @@ const submitForm = async (type, id) => {
       loadSectionData(activeIndex);
     }
   } catch (err) {
-    showAlert('error', err.response.data.message);
+    console.error('Form gönderimi hatası:', err);
+    showAlert('error', err.response?.data?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.');
   }
 };
 
@@ -426,4 +483,38 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // İlk sekmeyi yükle (Turlar)
   loadSectionData(0);
+  
+  // Toplam kullanıcı bağlantısına tıklandığında kullanıcılar sekmesine geç
+  const totalUsersLink = document.getElementById('total-users-link');
+  if (totalUsersLink) {
+    totalUsersLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Sekmeleri güncelle
+      const navItems = [
+        document.getElementById('tours-nav-item'),
+        document.getElementById('users-nav-item'),
+        document.getElementById('reviews-nav-item'),
+        document.getElementById('bookings-nav-item')
+      ];
+      
+      const sections = [
+        document.getElementById('tours-section'),
+        document.getElementById('users-section'),
+        document.getElementById('reviews-section'),
+        document.getElementById('bookings-section')
+      ];
+      
+      // Aktif nav öğesini güncelle
+      navItems.forEach(i => i.classList.remove('side-nav--active'));
+      navItems[1].classList.add('side-nav--active'); // Kullanıcılar sekmesi
+      
+      // Aktif bölümü güncelle
+      sections.forEach(s => s.classList.add('hidden'));
+      sections[1].classList.remove('hidden'); // Kullanıcılar bölümü
+      
+      // Kullanıcı verilerini yükle
+      loadSectionData(1);
+    });
+  }
 });

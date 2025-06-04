@@ -7,17 +7,26 @@ const AppError = require('../utils/appError');
 // Ana sayfa
 exports.getOverview = async (req, res, next) => {
   try {
-    // 1) Öne çıkan turları getir (puanı yüksek olanlardan 6 adet)
+    console.log('getOverview fonksiyonu çağrıldı');
+    // 1) Tüm turları getir ve çeşitli kriterlere göre sırala
+    // Önce en son eklenenleri göster, sonra da en çok puan ve değerlendirme alanları
     const tours = await Tour.find()
-      .sort('-ratingsAverage -ratingsQuantity')
-      .limit(6);
+      .sort('-createdAt -ratingsAverage -ratingsQuantity')
+      .limit(8); // Daha fazla tur göster
+    
+    console.log(`${tours.length} adet tur bulundu`);
+    tours.forEach(tour => {
+      console.log(`Tur: ${tour.name}, Oluşturulma: ${tour.createdAt}, Puan: ${tour.ratingsAverage}`);
+    });
     
     // 2) Modern şablonu kullan
     res.status(200).render('overview-modern', {
       title: 'Natours | Öne Çıkan Turlar',
-      tours
+      tours,
+      modern: true // Modern görünüm için flag
     });
   } catch (err) {
+    console.error('getOverview hatası:', err);
     next(new AppError(err.message, 404));
   }
 };
@@ -25,10 +34,17 @@ exports.getOverview = async (req, res, next) => {
 // Modern görünümlü ana sayfa
 exports.getModernOverview = async (req, res, next) => {
   try {
-    // 1) Öne çıkan turları getir (puanı yüksek olanlardan 6 adet)
+    console.log('getModernOverview fonksiyonu çağrıldı');
+    // 1) Tüm turları getir ve çeşitli kriterlere göre sırala
+    // Önce en son eklenenleri göster, sonra da en çok puan ve değerlendirme alanları
     const tours = await Tour.find()
-      .sort('-ratingsAverage -ratingsQuantity')
-      .limit(6);
+      .sort('-createdAt -ratingsAverage -ratingsQuantity')
+      .limit(8); // Daha fazla tur göster
+    
+    console.log(`${tours.length} adet tur bulundu`);
+    tours.forEach(tour => {
+      console.log(`Tur: ${tour.name}, Oluşturulma: ${tour.createdAt}, Puan: ${tour.ratingsAverage}`);
+    });
     
     // 2) Modern şablonu oluştur
     res.status(200).render('overview-modern', {
@@ -36,6 +52,7 @@ exports.getModernOverview = async (req, res, next) => {
       tours
     });
   } catch (err) {
+    console.error('getModernOverview hatası:', err);
     next(new AppError(err.message, 404));
   }
 };
@@ -182,6 +199,7 @@ exports.getAdminPanel = async (req, res, next) => {
   }
 };
 
+
 // Kullanıcı profil güncellemesi
 exports.updateUserData = async (req, res, next) => {
   try {
@@ -202,6 +220,199 @@ exports.updateUserData = async (req, res, next) => {
       user: updatedUser
     });
   } catch (err) {
-    next(new AppError(err.message, 400));
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Admin Paneli
+exports.getAdminPanel = async (req, res, next) => {
+  try {
+    // İstatistikleri getir
+    const stats = {
+      totalTours: await Tour.countDocuments(),
+      totalUsers: await User.countDocuments(),
+      totalBookings: await Booking.countDocuments(),
+      totalReviews: await Review.countDocuments()
+    };
+    
+    // Son 5 rezervasyonu getir
+    const recentBookings = await Booking.find()
+      .sort('-createdAt')
+      .limit(5)
+      .populate('user')
+      .populate('tour');
+    
+    // Son 5 yorumu getir
+    const recentReviews = await Review.find()
+      .sort('-createdAt')
+      .limit(5)
+      .populate('user')
+      .populate('tour');
+    
+    res.status(200).render('admin', {
+      title: 'Admin Paneli',
+      stats,
+      recentBookings,
+      recentReviews
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Tur Yönetimi Paneli
+exports.getManageTours = async (req, res, next) => {
+  try {
+    // Tüm turları getir
+    const tours = await Tour.find();
+    
+    res.status(200).render('manageTours', {
+      title: 'Tur Yönetimi',
+      tours
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Rezervasyon Yönetimi Paneli
+exports.getManageBookings = async (req, res, next) => {
+  try {
+    // Tüm rezervasyonları getir
+    const bookings = await Booking.find()
+      .populate('user')
+      .populate('tour');
+    
+    res.status(200).render('manageBookings', {
+      title: 'Rezervasyon Yönetimi',
+      bookings
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Kullanıcı Yönetimi Paneli
+exports.getManageUsers = async (req, res, next) => {
+  try {
+    // Tüm kullanıcıları getir
+    const users = await User.find();
+    
+    res.status(200).render('manageUsers', {
+      title: 'Kullanıcı Yönetimi',
+      users
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Admin için kullanıcı ekleme formu
+exports.getAdminSignupForm = async (req, res, next) => {
+  try {
+    res.status(200).render('adminSignup', {
+      title: 'Yeni Kullanıcı Ekle'
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Kullanıcı düzenleme formu
+exports.getEditUserForm = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return next(new AppError('Bu ID ile kullanıcı bulunamadı', 404));
+    }
+    
+    res.status(200).render('editUser', {
+      title: 'Kullanıcı Düzenle',
+      user
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Tur ekleme formu
+exports.getAddTourForm = async (req, res, next) => {
+  try {
+    res.status(200).render('addTour', {
+      title: 'Yeni Tur Ekle'
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Tur düzenleme formu
+exports.getEditTourForm = async (req, res, next) => {
+  try {
+    const tour = await Tour.findById(req.params.id);
+    
+    if (!tour) {
+      return next(new AppError('Bu ID ile tur bulunamadı', 404));
+    }
+    
+    res.status(200).render('editTour', {
+      title: 'Tur Düzenle',
+      tour
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Rezervasyon detayları
+exports.getBookingDetails = async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('user')
+      .populate('tour');
+    
+    if (!booking) {
+      return next(new AppError('Bu ID ile rezervasyon bulunamadı', 404));
+    }
+    
+    res.status(200).render('bookingDetails', {
+      title: 'Rezervasyon Detayları',
+      booking
+    });
+  } catch (err) {
+    return next(new AppError(err.message, 400));
+  }
+};
+
+// Hakkımızda sayfası
+exports.getAboutUs = (req, res) => {
+  try {
+    res.status(200).render('hakkimizda', {
+      title: 'Natours | Hakkımızda',
+      modern: true
+    });
+  } catch (err) {
+    console.error('Hakkımızda sayfası render hatası:', err);
+    res.status(404).render('error', {
+      title: 'Hata oluştu',
+      msg: 'Sayfa görüntülenirken bir hata oluştu.'
+    });
+  }
+};
+
+// İletişim sayfası
+exports.getContact = (req, res) => {
+  try {
+    res.status(200).render('iletisim', {
+      title: 'Natours | İletişim',
+      modern: true
+    });
+  } catch (err) {
+    console.error('İletişim sayfası render hatası:', err);
+    res.status(404).render('error', {
+      title: 'Hata oluştu',
+      msg: 'Sayfa görüntülenirken bir hata oluştu.'
+    });
   }
 };

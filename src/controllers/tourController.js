@@ -3,62 +3,71 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/apiFeatures');
 
-// Pagination ve filtreleme iu00e7in yardu0131mcu0131 fonksiyon
+// Pagination ve filtreleme için yardımcı fonksiyon
 const getFilteredTours = catchAsync(async (req, res, next) => {
-  // Filtreleme
-  const queryObj = { ...req.query };
-  const excludedFields = ['page', 'sort', 'limit', 'fields'];
-  excludedFields.forEach(el => delete queryObj[el]);
+  try {
+    console.log('getFilteredTours fonksiyonu çağrıldı');
+    
+    // Filtreleme
+    const queryObj = { ...req.query };
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach(el => delete queryObj[el]);
 
-  // Geliu015fmiu015f filtreleme
-  let queryStr = JSON.stringify(queryObj);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-  let query = Tour.find(JSON.parse(queryStr));
-  
-  // Arama sorgusu varsa
-  if (req.query.search) {
-    const searchQuery = req.query.search;
-    query = query.find({
-      $or: [
-        { name: { $regex: searchQuery, $options: 'i' } },
-        { summary: { $regex: searchQuery, $options: 'i' } },
-        { description: { $regex: searchQuery, $options: 'i' } }
-      ]
-    });
+    // Gelişmiş filtreleme
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    let query = Tour.find(JSON.parse(queryStr));
+    
+    // Arama sorgusu varsa
+    if (req.query.search) {
+      const searchQuery = req.query.search;
+      query = query.find({
+        $or: [
+          { name: { $regex: searchQuery, $options: 'i' } },
+          { summary: { $regex: searchQuery, $options: 'i' } },
+          { description: { $regex: searchQuery, $options: 'i' } }
+        ]
+      });
+    }
+
+    // Sıralama
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
+    }
+
+    // Alan sınırlama
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
+    }
+
+    // Sayfalama
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+    
+    // Sayfa kontrolü
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('Bu sayfa mevcut değil');
+    }
+
+    // Sorguyu çalıştır
+    const tours = await query;
+    
+    console.log(`Filtreleme sonucu ${tours.length} tur bulundu`);
+    return tours;
+  } catch (err) {
+    console.error('Filtreleme hatası:', err);
+    throw err; // Hata yönetimi için hatayı tekrar fırlat
   }
-
-  // Su0131ralama
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort('-createdAt');
-  }
-
-  // Alan su0131nu0131rlama
-  if (req.query.fields) {
-    const fields = req.query.fields.split(',').join(' ');
-    query = query.select(fields);
-  } else {
-    query = query.select('-__v');
-  }
-
-  // Sayfalama
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 100;
-  const skip = (page - 1) * limit;
-
-  query = query.skip(skip).limit(limit);
-
-  if (req.query.page) {
-    const numTours = await Tour.countDocuments();
-    if (skip >= numTours) throw new Error('Bu sayfa mevcut deu011fil');
-  }
-
-  // Sorguyu u00e7alu0131u015ftu0131r
-  const tours = await query;
-
-  return tours;
 });
 
 // Modern arayüz için filtreleme API'si
@@ -154,102 +163,224 @@ exports.filterTours = catchAsync(async (req, res, next) => {
 
 // Tüm turları getir
 exports.getAllTours = catchAsync(async (req, res, next) => {
-  const tours = await getFilteredTours(req, res, next);
-
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: {
-      tours
-    }
-  });
+  console.log('getAllTours fonksiyonu çağrıldı');
+  
+  try {
+    const tours = await Tour.find();
+    
+    // Tur verilerini güvenli hale getir
+    const safeTours = tours.map(tour => {
+      if (!tour) return null;
+      
+      const tourObj = tour.toObject ? tour.toObject() : tour;
+      
+      return {
+        ...tourObj,
+        imageCover: tourObj.imageCover || null,
+        images: tourObj.images || []
+      };
+    }).filter(tour => tour !== null); // null turları filtrele
+    
+    console.log(`${safeTours.length} tur başarıyla getirildi`);
+    
+    res.status(200).json({
+      status: 'success',
+      results: safeTours.length,
+      data: {
+        tours: safeTours
+      }
+    });
+  } catch (err) {
+    console.error('Turları getirme hatası:', err);
+    return next(new AppError(`Turlar alınırken hata oluştu: ${err.message}`, 400));
+  }
 });
 
-// ID'ye gu00f6re tur getir
+// ID'ye göre tur getir
 exports.getTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id).populate('reviews');
+  console.log('getTour fonksiyonu çağrıldı, ID:', req.params.id);
+  
+  try {
+    const tour = await Tour.findById(req.params.id).populate('reviews');
 
-  if (!tour) {
-    return next(new AppError('Bu ID ile tur bulunamadu0131', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour
+    if (!tour) {
+      console.log('Tur bulunamadı:', req.params.id);
+      return next(new AppError('Bu ID ile tur bulunamadı', 404));
     }
-  });
+    
+    // Tur verilerini güvenli hale getir
+    const safeTour = {
+      ...tour.toObject(),
+      imageCover: tour.imageCover || null,
+      images: tour.images || []
+    };
+    
+    console.log('Tur başarıyla bulundu:', tour.name);
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour: safeTour
+      }
+    });
+  } catch (err) {
+    console.error('Tur getirme hatası:', err);
+    return next(new AppError(`Tur bilgisi alınırken hata oluştu: ${err.message}`, 400));
+  }
 });
 
 // Slug ile tur getir
 exports.getTourBySlug = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findOne({ slug: req.params.slug }).populate('reviews');
+  console.log('getTourBySlug fonksiyonu çağrıldı, slug:', req.params.slug);
+  
+  try {
+    const tour = await Tour.findOne({ slug: req.params.slug }).populate('reviews');
 
-  if (!tour) {
-    return next(new AppError('Bu isimle tur bulunamadu0131', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour
+    if (!tour) {
+      console.log('Tur bulunamadı:', req.params.slug);
+      return next(new AppError('Bu isimle tur bulunamadı', 404));
     }
-  });
+    
+    // Tur verilerini güvenli hale getir
+    const safeTour = {
+      ...tour.toObject(),
+      imageCover: tour.imageCover || null,
+      images: tour.images || []
+    };
+    
+    console.log('Tur başarıyla bulundu:', tour.name);
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour: safeTour
+      }
+    });
+  } catch (err) {
+    console.error('Tur getirme hatası:', err);
+    return next(new AppError(`Tur bilgisi alınırken hata oluştu: ${err.message}`, 400));
+  }
 });
 
 // Yeni tur oluu015ftur
 exports.createTour = catchAsync(async (req, res, next) => {
-  if (req.files) {
-    // Cover resmi işle
-    if (req.files.imageCover) {
-      req.body.imageCover = req.body.imageCover;
+  console.log('createTour fonksiyonu çağrıldı');
+  console.log('Tur verileri:', req.body);
+  
+  try {
+    // Dosya yükleme işlemleri
+    if (req.files) {
+      // Cover resmi işle
+      if (req.files.imageCover) {
+        req.body.imageCover = req.body.imageCover;
+      }
+      
+      // Tur resimleri işle
+      if (req.files.images && req.files.images.length > 0) {
+        req.body.images = req.body.images;
+      }
     }
     
-    // Tur resimleri işle
-    if (req.files.images && req.files.images.length > 0) {
-      req.body.images = req.body.images;
+    // GeoJSON verilerini kontrol et ve düzelt
+    if (req.body.startLocation) {
+      // startLocation zaten bir string olarak gelmiş olabilir, JSON'a çevirmeyi dene
+      let startLocation = req.body.startLocation;
+      if (typeof startLocation === 'string') {
+        try {
+          startLocation = JSON.parse(startLocation);
+        } catch (e) {
+          console.log('startLocation JSON parse hatası:', e);
+        }
+      }
+      
+      // startLocation bir obje ise ve coordinates yoksa, varsayılan ekleyelim
+      if (typeof startLocation === 'object' && !startLocation.coordinates) {
+        startLocation.coordinates = [0, 0]; // Varsayılan koordinatlar (Ekvatorda Sıfır Meridyeni)
+        console.log('startLocation için varsayılan koordinatlar eklendi');
+      }
+      
+      req.body.startLocation = startLocation;
+    } else {
+      // startLocation yoksa, basit bir varsayılan değer ekleyelim
+      req.body.startLocation = {
+        type: 'Point',
+        coordinates: [0, 0],
+        description: 'Belirtilmemiş konum'
+      };
+      console.log('Varsayılan startLocation eklendi');
     }
-  }
-  
-  const newTour = await Tour.create(req.body);
+    
+    console.log('Düzeltilmiş tur verileri:', req.body);
+    
+    const newTour = await Tour.create(req.body);
+    console.log('Yeni tur oluşturuldu:', newTour.name);
 
-  res.status(201).json({
-    status: 'success',
-    data: {
-      tour: newTour
-    }
-  });
+    res.status(201).json({
+      status: 'success',
+      data: {
+        tour: newTour
+      }
+    });
+  } catch (err) {
+    console.error('Tur oluşturma hatası:', err);
+    return next(new AppError(`Tur oluşturulurken hata oluştu: ${err.message}`, 400));
+  }
 });
 
-// Tur gu00fcncelle
+// Tur güncelle
 exports.updateTour = catchAsync(async (req, res, next) => {
-  if (req.files) {
+  console.log('updateTour fonksiyonu çağrıldı');
+  console.log('Tur ID:', req.params.id);
+  console.log('Güncelleme verileri:', req.body);
+  
+  // req.files kontrolü - sadece dosya yükleme işlemi varsa çalışır
+  if (req.files && Object.keys(req.files).length > 0) {
+    console.log('Dosya yükleme işlemi tespit edildi');
     // Cover resmi işle
-    if (req.files.imageCover) {
-      req.body.imageCover = req.body.imageCover;
+    if (req.files.imageCover && req.files.imageCover.length > 0) {
+      req.body.imageCover = req.files.imageCover[0].filename;
+      console.log('Kapak resmi güncellendi:', req.body.imageCover);
     }
     
     // Tur resimleri işle
     if (req.files.images && req.files.images.length > 0) {
-      req.body.images = req.body.images;
+      req.body.images = req.files.images.map(img => img.filename);
+      console.log('Tur resimleri güncellendi:', req.body.images);
     }
   }
   
-  const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
+  try {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
 
-  if (!tour) {
-    return next(new AppError('Bu ID ile tur bulunamadu0131', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour
+    if (!tour) {
+      console.log('Tur bulunamadı:', req.params.id);
+      return next(new AppError('Bu ID ile tur bulunamadı', 404));
     }
-  });
+
+    console.log('Tur başarıyla güncellendi:', tour.name);
+    
+    // Güvenli tur objesi oluştur
+    const safeTour = {
+      ...tour.toObject(),
+      imageCover: tour.imageCover || 'default.jpg',
+      images: tour.images || []
+    };
+    
+    console.log('Güvenli tur verisi oluşturuldu');
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour: safeTour
+      }
+    });
+  } catch (err) {
+    console.error('Tur güncelleme hatası:', err);
+    return next(new AppError(`Tur güncellenirken hata oluştu: ${err.message}`, 400));
+  }
 });
 
 // Tur sil

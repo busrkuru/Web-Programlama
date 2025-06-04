@@ -1,0 +1,92 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .form-container
+        h2.heading-secondary.ma-bt-lg Yeni Tur Ekle
+        form.form.form--add-tour#tourForm
+          .form__group
+            label.form__label(for='name') Tur Adı
+            input#name.form__input(type='text', placeholder='Tur Adı', required, name='name')
+          .form__group
+            label.form__label(for='duration') Süre (gün)
+            input#duration.form__input(type='number', placeholder='7', required, name='duration', min='1')
+          .form__group
+            label.form__label(for='maxGroupSize') Maksimum Grup Boyutu
+            input#maxGroupSize.form__input(type='number', placeholder='12', required, name='maxGroupSize', min='1')
+          .form__group
+            label.form__label(for='difficulty') Zorluk
+            select#difficulty.form__input(name='difficulty', required)
+              option(value='easy') Kolay
+              option(value='medium') Orta
+              option(value='difficult') Zor
+          .form__group
+            label.form__label(for='price') Fiyat
+            input#price.form__input(type='number', placeholder='1000', required, name='price', min='1')
+          .form__group
+            label.form__label(for='summary') Özet
+            textarea#summary.form__input(placeholder='Tur hakkında kısa bilgi', required, name='summary')
+          .form__group
+            label.form__label(for='description') Açıklama
+            textarea#description.form__input(placeholder='Tur hakkında detaylı açıklama', required, name='description')
+          .form__group
+            label.form__label(for='imageCover') Kapak Resmi
+            input#imageCover.form__input(type='file', accept='image/*', name='imageCover')
+          .form__group
+            label.form__label(for='images') Diğer Resimler (Çoklu seçim yapabilirsiniz)
+            input#images.form__input(type='file', accept='image/*', name='images', multiple)
+          .form__group
+            label.form__label(for='startLocation') Başlangıç Konumu
+            input#startLocation.form__input(type='text', placeholder='İstanbul, Türkiye', name='startLocation[description]')
+          
+          .form__group
+            label.form__label(for='startDate1') Başlangıç Tarihi 1
+            input#startDate1.form__input(type='date', name='startDates[]')
+          
+          .form__group
+            label.form__label(for='startDate2') Başlangıç Tarihi 2 (Opsiyonel)
+            input#startDate2.form__input(type='date', name='startDates[]')
+          
+          .form__group
+            label.form__label(for='startDate3') Başlangıç Tarihi 3 (Opsiyonel)
+            input#startDate3.form__input(type='date', name='startDates[]')
+          
+          .form__group
+            button.btn.btn--green#saveBtn(type='submit') Kaydet
+            p.form-message
+        
+        script.
+          document.getElementById('tourForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            document.querySelector('.form-message').textContent = 'Tur oluşturuluyor...';
+            document.getElementById('saveBtn').disabled = true;
+            
+            const formData = new FormData(this);
+            
+            try {
+              const response = await fetch('/api/v1/tours', {
+                method: 'POST',
+                body: formData
+              });
+              
+              const data = await response.json();
+              
+              if (data.status === 'success') {
+                document.querySelector('.form-message').textContent = 'Tur başarıyla oluşturuldu! Yönlendiriliyor...';
+                setTimeout(() => {
+                  window.location.href = '/manage-tours';
+                }, 1500);
+              } else {
+                document.querySelector('.form-message').textContent = `Hata: ${data.message || 'Bir hata oluştu'}`;
+                document.getElementById('saveBtn').disabled = false;
+              }
+            } catch (err) {
+              console.error('Form gönderim hatası:', err);
+              document.querySelector('.form-message').textContent = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
+              document.getElementById('saveBtn').disabled = false;
+            }
+          });
+
+

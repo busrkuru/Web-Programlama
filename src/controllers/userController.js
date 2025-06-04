@@ -98,21 +98,65 @@ exports.createUser = catchAsync((req, res) => {
 
 // Kullanıcı güncelle (admin için)
 exports.updateUser = catchAsync(async (req, res, next) => {
-  const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true
-  });
-
-  if (!user) {
-    return next(new AppError('Bu ID ile kullanıcı bulunamadı', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user
+  console.log('[userController.js] updateUser fonksiyonu çağrıldı');
+  console.log('[userController.js] Güncellenecek kullanıcı ID:', req.params.id);
+  console.log('[userController.js] Güncelleme verileri:', req.body);
+  
+  try {
+    // Şifre alanlarını ayrı işle
+    const { password, passwordConfirm, ...otherFields } = req.body;
+    
+    // Önce kullanıcıyı bul
+    let user = await User.findById(req.params.id);
+    
+    if (!user) {
+      console.log('[userController.js] Kullanıcı bulunamadı:', req.params.id);
+      return next(new AppError('Bu ID ile kullanıcı bulunamadı', 404));
     }
-  });
+    
+    console.log('[userController.js] Kullanıcı bulundu:', user.email);
+    
+    // Şifre güncellemesi varsa
+    if (password && passwordConfirm) {
+      console.log('[userController.js] Şifre güncellemesi yapılıyor');
+      user.password = password;
+      user.passwordConfirm = passwordConfirm;
+      await user.save(); // Middleware'lerin çalışması için save() kullan
+      console.log('[userController.js] Şifre başarıyla güncellendi');
+    }
+    
+    // Diğer alanları güncelle (eğer varsa)
+    if (Object.keys(otherFields).length > 0) {
+      console.log('[userController.js] Profil bilgileri güncelleniyor:', otherFields);
+      
+      user = await User.findByIdAndUpdate(
+        req.params.id, 
+        otherFields, 
+        { new: true, runValidators: true }
+      );
+      
+      if (!user) {
+        console.log('[userController.js] Güncelleme sırasında kullanıcı bulunamadı');
+        return next(new AppError('Güncelleme sırasında bir hata oluştu', 404));
+      }
+      
+      console.log('[userController.js] Profil bilgileri başarıyla güncellendi');
+    } else {
+      console.log('[userController.js] Güncellenecek profil bilgisi yok');
+    }
+
+    console.log('[userController.js] Güncelleme tamamlandı, kullanıcı:', user);
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user
+      }
+    });
+  } catch (err) {
+    console.error('[userController.js] Güncelleme hatası:', err);
+    return next(new AppError(`Kullanıcı güncellenirken bir hata oluştu: ${err.message}`, 400));
+  }
 });
 
 // Kullanıcı sil (admin için)

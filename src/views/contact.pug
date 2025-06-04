@@ -1,0 +1,76 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .contact-section
+        h2.heading-secondary.ma-bt-lg İletişim
+        
+        .contact-content
+          .contact-info
+            h3.heading-tertiary Bize Ulaşın
+            p.paragraph
+              | Sorularınız, önerileriniz veya tur talepleriniz için bizimle iletişime geçebilirsiniz.
+              | Size en kısa sürede dönüş yapacağız.
+            
+            .contact-details
+              .contact-item
+                i.fas.fa-map-marker-alt
+                span Adres: Natours Merkez Ofis, İstanbul, Türkiye
+              
+              .contact-item
+                i.fas.fa-phone
+                span Telefon: +90 555 123 45 67
+              
+              .contact-item
+                i.fas.fa-envelope
+                span E-posta: info@natours.com.tr
+              
+              .contact-item
+                i.fas.fa-clock
+                span Çalışma Saatleri: Hafta içi 09:00 - 18:00
+          
+          .contact-social
+            h3.heading-tertiary Sosyal Medya
+            .social-links
+              a.social-link(href='https://github.com/busrkuru', target='_blank')
+                i.fab.fa-github
+                span GitHub
+              
+              a.social-link(href='https://www.linkedin.com/in/büşra-kuru-070b40268/', target='_blank')
+                i.fab.fa-linkedin
+                span LinkedIn
+              
+              a.social-link(href='#', target='_blank')
+                i.fab.fa-facebook
+                span Facebook
+              
+              a.social-link(href='#', target='_blank')
+                i.fab.fa-instagram
+                span Instagram
+              
+              a.social-link(href='#', target='_blank')
+                i.fab.fa-twitter
+                span Twitter
+        
+        .contact-form
+          h3.heading-tertiary Mesaj Bırakın
+          form.form
+            .form__group
+              label.form__label(for='name') Adınız
+              input#name.form__input(type='text', placeholder='Adınız', required)
+            
+            .form__group
+              label.form__label(for='email') E-posta
+              input#email.form__input(type='email', placeholder='E-posta adresiniz', required)
+            
+            .form__group
+              label.form__label(for='subject') Konu
+              input#subject.form__input(type='text', placeholder='Mesaj konusu', required)
+            
+            .form__group
+              label.form__label(for='message') Mesajınız
+              textarea#message.form__input(placeholder='Mesajınızı buraya yazın...', required, rows='5')
+            
+            .form__group
+              button.btn.btn--green Gönder

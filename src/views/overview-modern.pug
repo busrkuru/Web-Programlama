@@ -2,53 +2,162 @@ extends base
 
 block content
   // Hero Section
-  .hero
+  section.hero
+    .hero__overlay
     .hero__content
-      h1.hero__title Hayallerinizi Ertelemeyin
-      p.hero__subtitle Unutulmaz tur deneyimleri için keşfe başlayın
-      a.btn.btn--orange(href="#featured-tours") Turları Keşfet
+      h1.hero__title
+        span.hero__title-main Hayallerinizi Ertelemeyin
+        span.hero__title-sub Dünyanın En Güzel Turları
+      p.hero__subtitle Unutulmaz tur deneyimleri için hemen keşfe başlayın ve hayatınızın macerasını yaşayın
+      .hero__buttons
+        a.btn.btn--white(href="#featured-tours")
+          i.fas.fa-search
+          | Turları Keşfet
+        a.btn.btn--orange(href="/about")
+          i.fas.fa-info-circle
+          | Hakkımızda
+
+  // Boş alan bırakıyoruz, arama bölümünü kaldırdık
 
   // Featured Tours Section
   section#featured-tours.featured
     .container
-      h2.section-title Öne Çıkan Turlar
-      p.section-subtitle En çok beğenilen ve popüler tur seçeneklerimiz
+      .section-header.compact
+        h2.section-title Öne Çıkan Turlar
+        
+        .tour-filter
+          button.tour-filter__btn.active(data-filter='all') Tümü
+          button.tour-filter__btn(data-filter='popular') Popüler
+          button.tour-filter__btn(data-filter='discount') İndirimli
+          button.tour-filter__btn(data-filter='new') Yeni
       
       .tour-grid
         each tour in tours
-          .tour-card
-            .tour-card__ribbon
-              if tour.price < 4000
+          - const isPopular = tour.ratingsAverage >= 4.5
+          - const isDiscount = tour.price < 4000
+          - const isNew = new Date(tour.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          - const cardClasses = `tour-card ${isPopular ? 'popular' : ''} ${isDiscount ? 'discount' : ''} ${isNew ? 'new' : ''}`
+          .tour-card(class=cardClasses)
+            if isDiscount
+              .tour-card__ribbon.tour-card__ribbon--discount
                 span İndirimli
-              else if tour.ratingsAverage >= 4.5
+            else if isPopular
+              .tour-card__ribbon.tour-card__ribbon--popular
                 span Popüler
+            else if isNew
+              .tour-card__ribbon.tour-card__ribbon--new
+                span Yeni
+                
             .tour-card__image
               img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
               .tour-card__duration
                 i.fas.fa-clock
                 span #{tour.duration} Gün
+              
+              .tour-card__difficulty(class=`tour-card__difficulty--${tour.difficulty.toLowerCase()}`)
+                span= tour.difficulty === 'easy' ? 'Kolay' : tour.difficulty === 'medium' ? 'Orta' : 'Zor'
+              
+              .tour-card__wishlist
+                i.far.fa-heart
+            
             .tour-card__content
               .tour-card__rating
                 .tour-card__stars
-                  - const rating = Math.round(tour.ratingsAverage)
+                  - const rating = Math.round(tour.ratingsAverage * 2) / 2
                   - for (let i = 1; i <= 5; i++)
                     if i <= rating
                       i.fas.fa-star
+                    else if i - 0.5 === rating
+                      i.fas.fa-star-half-alt
                     else
                       i.far.fa-star
                 span.tour-card__reviews #{tour.ratingsQuantity} değerlendirme
+              
               h3.tour-card__title= tour.name
-              .tour-card__info
-                .tour-card__location
-                  i.fas.fa-map-marker-alt
+              
+              p.tour-card__summary= tour.summary
+              
+              .tour-card__data
+                .tour-card__data-item
+                  i.fas.fa-map-marker-alt.tour-card__icon
                   span= tour.startLocation.description
-                .tour-card__group
-                  i.fas.fa-users
-                  span Maks #{tour.maxGroupSize} kişi
+                
+                .tour-card__data-item
+                  i.fas.fa-calendar-alt.tour-card__icon
+                  - const hasStartDate = tour.startDates && tour.startDates.length > 0
+                  span #{hasStartDate ? tour.startDates[0].toLocaleString('tr-TR', {month: 'long', year: 'numeric'}) : 'Belirtilmemiş'}
+                
+                .tour-card__data-item
+                  i.fas.fa-users.tour-card__icon
+                  span #{tour.maxGroupSize} kişi
+              
               .tour-card__footer
                 .tour-card__price
+                  if isDiscount
+                    .tour-card__price-original #{(tour.price * 1.2).toLocaleString('tr-TR')}₺
                   span.tour-card__price-value #{tour.price.toLocaleString('tr-TR')}₺
                   span.tour-card__price-text kişi başı
+                
+                a.btn.btn--small.btn--green(href=`/tours/${tour.slug}`) Detaylar
+
+  // Müşteri yorumları bölümü kaldırıldı
+
+  // CTA Section - Kompakt
+  section.cta.cta--compact
+    .container
+      .cta-box.cta-box--compact
+        .cta-content
+          h2.cta-title.cta-title--compact Hayal Ettiğiniz Tatile Hemen Başlayın
+          a.btn.btn--orange.cta-btn(href='/tours') Şimdi Rezervasyon Yap
+
+  script.
+    // Tur filtreleme fonksiyonu
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterButtons = document.querySelectorAll('.tour-filter__btn');
+      const tourCards = document.querySelectorAll('.tour-card');
+      
+      filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          // Aktif buton sınıfını kaldır
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          // Tıklanan butona aktif sınıfını ekle
+          button.classList.add('active');
+          
+          const filter = button.getAttribute('data-filter');
+          
+          tourCards.forEach(card => {
+            if (filter === 'all') {
+              card.style.display = 'block';
+            } else if (filter === 'popular' && card.classList.contains('popular')) {
+              card.style.display = 'block';
+            } else if (filter === 'discount' && card.classList.contains('discount')) {
+              card.style.display = 'block';
+            } else if (filter === 'new' && card.classList.contains('new')) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+      
+      // Favori ekleme/çıkarma fonksiyonu
+      const wishlistButtons = document.querySelectorAll('.tour-card__wishlist');
+      wishlistButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const icon = this.querySelector('i');
+          if (icon.classList.contains('far')) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            icon.style.color = '#e74c3c';
+          } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            icon.style.color = '';
+          }
+        });
+      });
+    });
                 a.btn.btn--small.btn--orange(href=`/tours/${tour.slug}`) İncele
 
   // Promotions Section

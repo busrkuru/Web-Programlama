@@ -1,14 +1,40 @@
 header.header
-  nav.nav.nav--tours
-    a.nav__el(href='/') Natours
-  .header__logo
-    img(src='/img/logo-white.png' alt='Natours logo')
-  nav.nav.nav--user
-    if user
-      a.nav__el.nav__el--logout Çıkış
-      a.nav__el(href='/me')
-        img.nav__user-img(src=`/img/users/${user.photo}` alt=`${user.name} fotoğrafı`)
-        span= user.name.split(' ')[0]
-    else
-      a.nav__el(href='/login') Giriş Yap
-      a.nav__el.nav__el--cta(href='/signup') Kaydol
+  .container
+    nav.nav
+      a.nav__brand(href='/')
+        img.nav__logo(src='/img/logo-white.png' alt='Natours logo')
+        span.nav__brand-text Natours
+      
+      .nav__menu
+        a.nav__link(href='/') Ana Sayfa
+        a.nav__link(href='/#featured-tours') Turlar
+        a.nav__link(href='/about') Hakkımızda
+        a.nav__link(href='/contact') İletişim
+      
+      .nav__user
+        if user
+          .nav__user-info
+            a.nav__user-link(href='/me')
+              if user.photo
+                img.nav__user-img(src=`/img/users/${user.photo}` alt=`${user.name} fotoğrafı`)
+              else
+                .nav__user-placeholder
+                  i.fas.fa-user
+              span.nav__user-name= user.name.split(' ')[0]
+            .nav__dropdown
+              a.nav__dropdown-item(href='/me') Profilim
+              a.nav__dropdown-item(href='/my-bookings') Rezervasyonlarım
+              a.nav__dropdown-item(href='/my-reviews') Yorumlarım
+              if user.role === 'admin' || user.role === 'lead-guide'
+                a.nav__dropdown-item.nav__dropdown-item--admin(href='/admin')
+                  i.fas.fa-cogs
+                  span Yönetim Paneli
+              a.nav__dropdown-item.nav__dropdown-item--logout(href='/logout') Çıkış Yap
+        else
+          .nav__auth
+            a.nav__auth-link(href='/login')
+              i.fas.fa-sign-in-alt
+              span Giriş Yap
+            a.nav__auth-link.nav__auth-link--cta(href='/signup')
+              i.fas.fa-user-plus
+              span Kaydol

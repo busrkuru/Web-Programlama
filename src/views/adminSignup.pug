@@ -1,0 +1,32 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .form-container
+        h2.heading-secondary.ma-bt-lg Yeni Kullanıcı Ekle
+        form.form.form--signup(action='/api/v1/users/signup' method='POST')
+          .form__group
+            label.form__label(for='name') Ad Soyad
+            input#name.form__input(type='text', placeholder='Ad Soyad', required, name='name')
+          .form__group
+            label.form__label(for='email') Email
+            input#email.form__input(type='email', placeholder='you@example.com', required, name='email')
+          .form__group
+            label.form__label(for='password') Şifre
+            input#password.form__input(type='password', placeholder='••••••••', required, minlength='8', name='password')
+          .form__group
+            label.form__label(for='passwordConfirm') Şifre Tekrar
+            input#passwordConfirm.form__input(type='password', placeholder='••••••••', required, minlength='8', name='passwordConfirm')
+          .form__group
+            label.form__label(for='role') Kullanıcı Rolü
+            select#role.form__input(name='role', required)
+              option(value='user') Kullanıcı
+              option(value='guide') Rehber
+              option(value='lead-guide') Baş Rehber
+              option(value='admin') Admin
+          .form__group
+            button.btn.btn--green Kaydet
+
+block scripts
+  script(src='/js/adminSignup.js')

@@ -16,17 +16,30 @@ router.get('/available-dates/:tourId', bookingController.getAvailableDates);
 // Yeni rezervasyon oluştur
 router.post('/', bookingController.createBooking);
 
-// Admin rotaları
-router.use(authController.restrictTo('admin', 'lead-guide'));
-
+// Tüm rezervasyonları görme - sadece admin ve lead-guide
 router
   .route('/')
-  .get(bookingController.getAllBookings);
+  .get(
+    authController.restrictToResource('bookings', 'read'),
+    bookingController.getAllBookings
+  );
 
+// Belirli bir rezervasyonu görme/düzenleme/silme
 router
   .route('/:id')
-  .get(bookingController.getBooking)
-  .patch(bookingController.updateBooking)
-  .delete(bookingController.deleteBooking);
+  .get(
+    authController.checkOwnership(require('../models/bookingModel')),
+    bookingController.getBooking
+  )
+  .patch(
+    authController.restrictToResource('bookings', 'update'),
+    authController.checkOwnership(require('../models/bookingModel')),
+    bookingController.updateBooking
+  )
+  .delete(
+    authController.restrictToResource('bookings', 'delete'),
+    authController.checkOwnership(require('../models/bookingModel')),
+    bookingController.deleteBooking
+  );
 
 module.exports = router;

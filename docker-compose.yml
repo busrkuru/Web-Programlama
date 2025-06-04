@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    image: tour-reservation-system
+    container_name: tour-app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE=mongodb://mongodb:27017/natours
+      - DATABASE_LOCAL=mongodb://mongodb:27017/natours
+      - JWT_SECRET=very-secure-jwt-secret-key-for-tour-application
+      - JWT_EXPIRES_IN=90d
+      - JWT_COOKIE_EXPIRES_IN=90
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - tour-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: tour-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - tour-network
+
+networks:
+  tour-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

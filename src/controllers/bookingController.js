@@ -25,7 +25,7 @@ exports.createBooking = async (req, res, next) => {
       price: tour.price,
       participants,
       startDate,
-      paid: true
+      paid: true // Direk u00f6denmiu015f olarak iu015faretle
     });
     
     res.status(201).json({

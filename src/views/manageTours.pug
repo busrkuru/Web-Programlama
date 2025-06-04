@@ -1,0 +1,44 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .admin-actions
+        h1.heading-primary Tur Yönetimi
+        a.btn.btn--small.btn--green(href='/add-tour') Yeni Tur Ekle
+      
+      table.table
+        thead
+          tr
+            th Resim
+            th Tur Adı
+            th Süre
+            th Zorluk
+            th Fiyat
+            th Değerlendirme
+            th İşlemler
+        tbody#tours-table-body
+          each tour in tours
+            tr
+              td
+                if tour && tour.imageCover
+                  img.table-img(src=`/img/tours/${tour.imageCover}` alt=(tour.name || 'Tur'))
+                else
+                  span.no-image Resim Yok
+              td= tour && tour.name ? tour.name : 'İsimsiz Tur'
+              td= tour && tour.duration ? `${tour.duration} gün` : 'Belirtilmemiş'
+              td= tour && tour.difficulty ? tour.difficulty : 'Belirtilmemiş'
+              td= tour && tour.price ? `${tour.price} ₺` : 'Belirtilmemiş'
+              td= tour && tour.ratingsAverage ? `${tour.ratingsAverage} / 5` : 'Henüz değerlendirilmedi'
+              td.table-actions
+                if tour && tour.slug
+                  a.btn.btn--small(href=`/tours/${tour.slug}`) Görüntüle
+                if tour && tour._id
+                  button.btn.btn--small.btn--blue.edit-tour-btn(data-tour-id=`${tour._id}`) Düzenle
+                  button.btn.btn--small.btn--red.delete-tour-btn(data-tour-id=`${tour._id}`) Sil
+      
+      #tour-form-container
+
+block append scripts
+  script(src='/js/axios.min.js')
+  script(src='/js/manageTours.js')

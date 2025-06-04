@@ -3,21 +3,128 @@ extends base
 block content
   main.main
     .login-form
-      h2.heading-secondary.ma-bt-lg Yeni hesap oluşturun
+      h2.heading-secondary.ma-bt-lg Yeni Hesap Oluşturun
+      p.form-description Natours'a kaydolarak dünyanın en güzel turlarını keşfedin, rezervasyon yapın ve deneyimlerinizi paylaşın.
+      
       form.form.form--signup
         .form__group
-          label.form__label(for='name') Ad Soyad
+          label.form__label(for='name')
+            i.fas.fa-user
+            | Adınız Soyadınız
           input#name.form__input(type='text', placeholder='Ad Soyad', required)
+        
         .form__group
-          label.form__label(for='email') Email
-          input#email.form__input(type='email', placeholder='you@example.com', required)
+          label.form__label(for='email')
+            i.fas.fa-envelope
+            | Email Adresiniz
+          input#email.form__input(type='email', placeholder='ornek@email.com', required)
+        
+        .form__group
+          label.form__label(for='password')
+            i.fas.fa-lock
+            | Şifreniz
+          .password-container
+            input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+            i.password-toggle.fas.fa-eye(data-target='password')
+          small.form__hint En az 8 karakter, bir büyük harf ve bir rakam içermelidir.
+        
         .form__group.ma-bt-md
-          label.form__label(for='password') Şifre
-          input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
-        .form__group.ma-bt-md
-          label.form__label(for='passwordConfirm') Şifre Tekrarı
-          input#passwordConfirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+          label.form__label(for='passwordConfirm')
+            i.fas.fa-lock
+            | Şifre Tekrarı
+          .password-container
+            input#passwordConfirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+            i.password-toggle.fas.fa-eye(data-target='passwordConfirm')
+        
+        .form__group.form__group--terms
+          .form__checkbox
+            input#terms.form__checkbox-input(type='checkbox', required)
+            label.form__checkbox-label(for='terms')
+              a.terms-link(href='/terms') Kullanım koşullarını
+              |  ve 
+              a.terms-link(href='/privacy') gizlilik politikasını
+              |  kabul ediyorum.
+        
         .form__group
-          button.btn.btn--green Kaydol
-        .form__group
-          a.form__link(href="/login") Zaten hesabınız var mı? Giriş yapın
+          button.btn.btn--green
+            i.fas.fa-user-plus
+            | Hesap Oluştur
+        
+
+        
+        .form__group.form__group--login
+          p Zaten hesabınız var mı?
+          a.form__link(href='/login') Giriş Yapın
+    
+block scripts
+  script(src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js')
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Signup script loaded');
+    
+      // Şifre gösterme/gizleme fonksiyonu
+      document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+          const targetId = this.getAttribute('data-target');
+          const passwordInput = document.getElementById(targetId);
+          
+          if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            this.classList.remove('fa-eye');
+            this.classList.add('fa-eye-slash');
+          } else {
+            passwordInput.type = 'password';
+            this.classList.remove('fa-eye-slash');
+            this.classList.add('fa-eye');
+          }
+        });
+      });
+      
+      // Kayıt formunu işle
+      const form = document.querySelector('.form--signup');
+      if (form) {
+        console.log('Signup form found');
+        
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          console.log('Signup form submitted');
+          
+          const name = document.getElementById('name').value;
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
+          const passwordConfirm = document.getElementById('passwordConfirm').value;
+          
+          // Şifre eşleşme kontrolü
+          if (password !== passwordConfirm) {
+            alert('Şifreler eşleşmiyor. Lütfen kontrol ediniz.');
+            return;
+          }
+          
+          try {
+            console.log('Attempting signup for:', { name, email });
+            
+            const res = await axios({
+              method: 'POST',
+              url: '/api/v1/users/signup',
+              data: {
+                name,
+                email,
+                password,
+                passwordConfirm
+              }
+            });
+            
+            console.log('Signup response:', res);
+            
+            if (res.data.status === 'success') {
+              console.log('Signup successful');
+              // Yönlendirme sunucu tarafından yapılacak
+              window.location.reload();
+            }
+          } catch (err) {
+            console.error('Signup error:', err.response?.data || err);
+            alert('Kayıt işlemi başarısız: ' + (err.response?.data?.message || 'Bir hata oluştu'));
+          }
+        });
+      }
+    });

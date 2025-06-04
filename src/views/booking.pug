@@ -34,7 +34,9 @@ block content
       form.form.form--booking(data-tour-id=`${tour.id}`)
         .form__group
           label.form__label(for='participants') Katılımcı Sayısı
-          input#participants.form__input(type='number', min='1', max=`${tour.maxGroupSize}`, value='1', required)
+          .form__input-group
+            input#participants.form__input(type='number', min='1', max=`${tour.maxGroupSize}`, value='1', required)
+            .form__input-hint Maksimum: #{tour.maxGroupSize} kişi
         
         .form__group.ma-bt-md
           label.form__label(for='date') Tur Tarihi
@@ -45,8 +47,9 @@ block content
         
         .form__group.form__group--total
           .booking-form__total
-            h4.booking-form__total-text Toplam: 
+            h4.booking-form__total-text Kişi Başına Fiyat: 
             span.booking-form__total-value #{tour.price} ₺
+          .booking-form__total-note Bu fiyata tüm vergiler ve hizmetler dahildir.
         
         .form__group
           button.btn.btn--green.btn--book Rezervasyon Yap

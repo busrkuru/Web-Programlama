@@ -7,9 +7,10 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Bir tur ismi olmalıdır'],
       unique: true,
-      trim: true,
-      maxlength: [40, 'Bir tur ismi en fazla 40 karakter olabilir'],
-      minlength: [10, 'Bir tur ismi en az 10 karakter olmalıdır']
+      trim: true
+      // Karakter sınırlarını kaldırdık
+      // maxlength: [40, 'Bir tur ismi en fazla 40 karakter olabilir'],
+      // minlength: [10, 'Bir tur ismi en az 10 karakter olmalıdır']
     },
     slug: String,
     duration: {

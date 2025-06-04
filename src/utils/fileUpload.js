@@ -48,33 +48,52 @@ exports.resizeUserPhoto = async (req, res, next) => {
 
 // Middleware to resize tour images
 exports.resizeTourImages = async (req, res, next) => {
-  if (!req.files.imageCover || !req.files.images) return next();
-
-  // 1) Cover image
-  const imageCoverFilename = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
-  req.body.imageCover = imageCoverFilename;
+  console.log('resizeTourImages middleware çağrıldı');
+  console.log('req.files:', req.files);
   
-  await sharp(req.files.imageCover[0].buffer)
-    .resize(2000, 1333)
-    .toFormat('jpeg')
-    .jpeg({ quality: 90 })
-    .toFile(`src/public/img/tours/${imageCoverFilename}`);
+  // req.files mevcut değilse veya boşsa, işlemi atla
+  if (!req.files || Object.keys(req.files).length === 0) {
+    console.log('Yüklenecek dosya yok, işlemi atlama');
+    return next();
+  }
 
-  // 2) Tour images
-  req.body.images = [];
+  // 1) Cover image - eğer varsa
+  if (req.files.imageCover && req.files.imageCover.length > 0) {
+    console.log('Kapak resmi işleniyor...');
+    const imageCoverFilename = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    req.body.imageCover = imageCoverFilename;
+    
+    await sharp(req.files.imageCover[0].buffer)
+      .resize(2000, 1333)
+      .toFormat('jpeg')
+      .jpeg({ quality: 90 })
+      .toFile(`src/public/img/tours/${imageCoverFilename}`);
+    
+    console.log('Kapak resmi işlendi:', imageCoverFilename);
+  }
 
-  await Promise.all(
-    req.files.images.map(async (file, i) => {
-      const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
-      req.body.images.push(filename);
+  // 2) Images - eğer varsa
+  if (req.files.images && req.files.images.length > 0) {
+    console.log('Tur resimleri işleniyor...');
+    req.body.images = [];
 
-      await sharp(file.buffer)
-        .resize(2000, 1333)
-        .toFormat('jpeg')
-        .jpeg({ quality: 90 })
-        .toFile(`src/public/img/tours/${filename}`);
-    })
-  );
+    await Promise.all(
+      req.files.images.map(async (file, i) => {
+        const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`;
 
+        await sharp(file.buffer)
+          .resize(2000, 1333)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(`src/public/img/tours/${filename}`);
+
+        req.body.images.push(filename);
+      })
+    );
+    
+    console.log('Tur resimleri işlendi:', req.body.images.length);
+  }
+
+  console.log('resizeTourImages middleware tamamlandı');
   next();
 };

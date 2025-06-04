@@ -1,0 +1,43 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .form-container
+        h2.heading-secondary.ma-bt-lg Tur Düzenle
+        form.form.form--edit-tour(data-tour-id=tour._id)
+          .form__group
+            label.form__label(for='name') Tur Adı
+            input#name.form__input(type='text', value=tour.name, required, name='name')
+          .form__group
+            label.form__label(for='duration') Süre (gün)
+            input#duration.form__input(type='number', value=tour.duration, required, name='duration', min='1')
+          .form__group
+            label.form__label(for='maxGroupSize') Maksimum Grup Boyutu
+            input#maxGroupSize.form__input(type='number', value=tour.maxGroupSize, required, name='maxGroupSize', min='1')
+          .form__group
+            label.form__label(for='difficulty') Zorluk
+            select#difficulty.form__input(name='difficulty', required)
+              option(value='') Zorluk seviyesi seçin
+              each level in ['easy', 'medium', 'difficult']
+                option(value=level, selected=tour.difficulty === level)= level === 'easy' ? 'Kolay' : level === 'medium' ? 'Orta' : 'Zor'
+          .form__group
+            label.form__label(for='price') Fiyat
+            input#price.form__input(type='number', value=tour.price, required, name='price', min='1')
+          .form__group
+            label.form__label(for='summary') Özet
+            textarea#summary.form__input(required, name='summary')= tour.summary
+          .form__group
+            label.form__label(for='description') Açıklama
+            textarea#description.form__input(required, name='description')= tour.description
+          .form__group
+            label.form__label(for='imageCover') Kapak Resmi (Güncellemek isterseniz seçin)
+            input#imageCover.form__input(type='file', accept='image/*', name='imageCover')
+            if tour.imageCover
+              .form__image-preview
+                img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+          .form__group
+            button.btn.btn--green.btn--save-tour Kaydet
+
+script(src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js')
+script(src='/js/editTour.js')

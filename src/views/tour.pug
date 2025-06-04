@@ -1,97 +1,158 @@
 extends base
 
 block content
-  section.section-header
-    .header__hero
-      .header__hero-overlay &nbsp;
-      img.header__hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
-    .heading-box
-      h1.heading-primary
-        span= tour.name
-      .heading-box__group
-        .heading-box__detail
-          svg.heading-box__icon
-            use(xlink:href='/img/icons.svg#icon-clock')
-          span.heading-box__text= `${tour.duration} gu00fcn`
-        .heading-box__detail
-          svg.heading-box__icon
-            use(xlink:href='/img/icons.svg#icon-map-pin')
-          span.heading-box__text= tour.startLocation.description
-
-  section.section-description
-    .overview-box
-      div
-        .overview-box__group
-          h2.heading-secondary.ma-bt-lg Hızlı bakış
-          .overview-box__detail
-            svg.overview-box__icon
-              use(xlink:href='/img/icons.svg#icon-calendar')
-            span.overview-box__label Başlangıç
-            span.overview-box__text= tour.startDates[0].toLocaleString('tr-TR', {month: 'long', year: 'numeric'})
-          .overview-box__detail
-            svg.overview-box__icon
-              use(xlink:href='/img/icons.svg#icon-trending-up')
-            span.overview-box__label Zorluk
-            span.overview-box__text= tour.difficulty
-          .overview-box__detail
-            svg.overview-box__icon
-              use(xlink:href='/img/icons.svg#icon-user')
-            span.overview-box__label Katılımcılar
-            span.overview-box__text= `${tour.maxGroupSize} kişi`
-          .overview-box__detail
-            svg.overview-box__icon
-              use(xlink:href='/img/icons.svg#icon-star')
-            span.overview-box__label Değerlendirme
-            span.overview-box__text= `${tour.ratingsAverage} / 5`
-
-        .overview-box__group
-          h2.heading-secondary.ma-bt-lg Tur rehberleri
-          each guide in tour.guides
-            .overview-box__detail
-              img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.name}`)
-              - if (guide.role === 'lead-guide')
-                span.overview-box__label Baş rehber
-              - else if (guide.role === 'guide')
-                span.overview-box__label Rehber
-              span.overview-box__text= guide.name
-
-    .description-box
-      h2.heading-secondary.ma-bt-lg= `${tour.name} hakkında`
+  // Hero Section
+  section.hero-section
+    .hero-overlay
+    img.hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+    .hero-content
+      h1.hero-title= tour.name
+      .hero-details
+        .hero-detail
+          i.fas.fa-clock.hero-icon
+          span= `${tour.duration} gün`
+        .hero-detail
+          i.fas.fa-map-marker-alt.hero-icon
+          span= tour.startLocation.description
+        .hero-detail
+          i.fas.fa-users.hero-icon
+          span= `${tour.maxGroupSize} kişi`
+        .hero-detail
+          i.fas.fa-star.hero-icon
+          span= `${tour.ratingsAverage} / 5 (${tour.ratingsQuantity} değerlendirme)`
+  
+  // Overview Section
+  section.overview-section
+    .overview-container
+      .overview-card.overview-card--full
+        .overview-header Tur Detayları
+        .overview-content
+          ul.overview-list.overview-list--grid
+            li.overview-item
+              i.fas.fa-calendar-alt.overview-icon
+              span.overview-label Başlangıç
+              - const hasStartDate = tour.startDates && tour.startDates.length > 0
+              span.overview-text= hasStartDate ? tour.startDates[0].toLocaleString('tr-TR', {month: 'long', year: 'numeric'}) : 'Belirtilmemiş'
+            li.overview-item
+              i.fas.fa-hiking.overview-icon
+              span.overview-label Zorluk
+              span.overview-text= tour.difficulty
+            li.overview-item
+              i.fas.fa-users.overview-icon
+              span.overview-label Katılımcılar
+              span.overview-text= `${tour.maxGroupSize} kişi`
+            li.overview-item
+              i.fas.fa-star.overview-icon
+              span.overview-label Değerlendirme
+              span.overview-text= `${tour.ratingsAverage} / 5`
+            li.overview-item
+              i.fas.fa-map-marker-alt.overview-icon
+              span.overview-label Konum
+              span.overview-text= tour.startLocation.description
+            li.overview-item
+              i.fas.fa-money-bill-wave.overview-icon
+              span.overview-label Fiyat
+              span.overview-text= `${tour.price.toLocaleString('tr-TR')} ₺ / kişi`
+  
+  // Description Section
+  section.description-section
+    .description-container
+      h2.description-title= `${tour.name} Hakkında`
       - const paragraphs = tour.description.split('\n');
       each p in paragraphs
-        p.description__text= p
-
-  section.section-pictures
-    each img, i in tour.images
-      .picture-box
-        img.picture-box__img(src=`/img/tours/${img}`, alt=`${tour.name} Tour ${i + 1}`, class=`picture-box__img--${i + 1}`)
-
-  section.section-map
-    #map(data-locations=`${JSON.stringify(tour.locations)}`)
-
-  section.section-reviews
-    .reviews
-      each review in tour.reviews
-        .reviews__card
-          .reviews__avatar
-            img.reviews__avatar-img(src=`/img/users/${review.user.photo}`, alt=`${review.user.name}`)
-            h6.reviews__user= review.user.name
-          p.reviews__text= review.review
-          .reviews__rating
-            each star in [1, 2, 3, 4, 5]
-              svg.reviews__star(class=`reviews__star--${review.rating >= star ? 'active' : 'inactive'}`)
-                use(xlink:href='/img/icons.svg#icon-star')
-
-  section.section-cta
-    .cta
-      .cta__img.cta__img--logo
-        img(src='/img/logo-white.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
-      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[2]}`, alt='Tour picture')
-      .cta__content
-        h2.heading-secondary Bu tura hemen katılın!
-        p.cta__text #{tour.duration} gün. 1 macera. Sonsuz anılar. Rüya gibi bir tatil deneyimi!
+        p.description-text= p
+  
+  // Gallery Section
+  section.gallery-section
+    .gallery-container
+      .gallery-grid
+        each img, i in tour.images
+          .gallery-item
+            img.gallery-img(src=`/img/tours/${img}`, alt=`${tour.name} Tour ${i + 1}`)
+  
+  
+  // Reviews Section
+  if tour.reviews && tour.reviews.length > 0
+    section.reviews-section
+      .reviews-container
+        h2.reviews-title Katılımcı Yorumları
+        .reviews-grid
+          each review in tour.reviews
+            .review-card
+              .review-user
+                img.review-avatar(src=`/img/users/${review.user.photo}`, alt=`${review.user.name}`)
+                h4.review-username= review.user.name
+              p.review-text= review.review
+              .review-rating
+                each star in [1, 2, 3, 4, 5]
+                  if review.rating >= star
+                    i.fas.fa-star.review-star
+                  else
+                    i.far.fa-star.review-star.review-star--inactive
+  
+  // CTA Section
+  section.cta-section
+    .cta-container
+      .cta-content
+        h2.cta-title Bu tura hemen katılın!
+        p.cta-text #{tour.duration} gün. 1 macera. Sonsuz anılar. Rüya gibi bir tatil deneyimi!
         if user
-          a.btn.btn--green.span-all-rows(href=`/book/${tour._id}`) Rezervasyon Yap
+          a.cta-btn(href=`/book/${tour._id}`) Rezervasyon Yap
         else
-          a.btn.btn--green.span-all-rows(href='/login') Giriş yaparak rezervasyon yapabilirsiniz
+          a.cta-btn(href='/login') Giriş Yaparak Rezervasyon Yap
+      
+      .cta-images
+        if tour.images && tour.images.length >= 2
+          img.cta-img(src=`/img/tours/${tour.images[0]}`, alt='Tour picture')
+          img.cta-img(src=`/img/tours/${tour.images[1]}`, alt='Tour picture')
+
+  script.
+    // Map initialization
+    const locations = !{JSON.stringify(tour.locations)};
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      mapboxgl.accessToken = 'pk.eyJ1IjoibmF0b3Vyc2FwcCIsImEiOiJjbHVyZTJ0MWwwMXBsMmtueGpqcmF3aXN1In0.FhUZtxR9mF4zNMjZNrNZZg';
+      
+      const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        scrollZoom: false
+      });
+      
+      const bounds = new mapboxgl.LngLatBounds();
+      
+      locations.forEach(loc => {
+        // Create marker
+        const el = document.createElement('div');
+        el.className = 'marker';
+        
+        // Add marker
+        new mapboxgl.Marker({
+          element: el,
+          anchor: 'bottom'
+        })
+          .setLngLat(loc.coordinates)
+          .addTo(map);
+        
+        // Add popup
+        new mapboxgl.Popup({
+          offset: 30,
+          closeOnClick: false
+        })
+          .setLngLat(loc.coordinates)
+          .setHTML(`<p>Gün ${loc.day}: ${loc.description}</p>`)
+          .addTo(map);
+        
+        // Extend bounds to include current location
+        bounds.extend(loc.coordinates);
+      });
+      
+      map.fitBounds(bounds, {
+        padding: {
+          top: 200,
+          bottom: 150,
+          left: 100,
+          right: 100
+        }
+      });
+    });

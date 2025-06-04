@@ -17,6 +17,8 @@ export const bookTour = async (tourId, participants, startDate) => {
 
     if (res.data.status === 'success') {
       showAlert('success', 'Rezervasyonunuz başarıyla oluşturuldu!');
+      
+      // Rezervasyonlar sayfasına yönlendir
       window.setTimeout(() => {
         location.assign('/my-bookings');
       }, 1500);
@@ -26,21 +28,28 @@ export const bookTour = async (tourId, participants, startDate) => {
   }
 };
 
-// Rezervasyon sayfasında toplam fiyatı hesapla
+// Rezervasyon sayfasında artık sadece kişi başı fiyat gösteriliyor
+// Bu fonksiyon artık sadece form kontrolü için kullanılıyor
 export const updateBookingTotal = () => {
+  // Artık toplam fiyat hesaplamaya gerek yok
+  // Sadece katılımcı sayısının maksimum değeri aşmamasını kontrol ediyoruz
   const participantsInput = document.getElementById('participants');
-  const totalElement = document.querySelector('.booking-form__total-value');
-  const priceElement = document.querySelector('.booking-form__price-value');
   
-  if (participantsInput && totalElement && priceElement) {
-    const price = parseInt(priceElement.textContent);
-    const participants = parseInt(participantsInput.value);
-    
-    totalElement.textContent = `${price * participants} ₺`;
-    
+  if (participantsInput) {
+    // Katılımcı sayısı değiştiğinde kontrol et
     participantsInput.addEventListener('change', () => {
-      const participants = parseInt(participantsInput.value);
-      totalElement.textContent = `${price * participants} ₺`;
+      const newParticipants = parseInt(participantsInput.value);
+      const maxParticipants = parseInt(participantsInput.getAttribute('max'));
+      
+      // Maksimum değeri aşarsa, maksimum değere ayarla
+      if (newParticipants > maxParticipants) {
+        participantsInput.value = maxParticipants;
+      }
+      
+      // Minimum değerin altına düşerse, minimum değere ayarla
+      if (newParticipants < 1) {
+        participantsInput.value = 1;
+      }
     });
   }
 };

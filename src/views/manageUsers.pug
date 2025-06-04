@@ -1,0 +1,37 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .admin-actions
+        h1.heading-primary Kullanıcı Yönetimi
+        a.btn.btn--small.btn--green(href='/signup-admin') Yeni Kullanıcı Ekle
+      
+      table.table
+        thead
+          tr
+            th Fotoğraf
+            th İsim
+            th Email
+            th Rol
+            th İşlemler
+        tbody#users-table-body
+          each user in users
+            tr
+              td
+                if user.photo
+                  img.table-img(src=`/img/users/${user.photo}` alt=`${user.name}`)
+                else
+                  img.table-img(src='/img/users/default.jpg' alt='Default user')
+              td= user.name
+              td= user.email
+              td= user.role
+              td.table-actions
+                button.btn.btn--small.btn--blue.edit-user-btn(data-user-id=`${user._id}`) Düzenle
+                button.btn.btn--small.btn--red.delete-user-btn(data-user-id=`${user._id}`) Sil
+      
+      #user-form-container
+
+block append scripts
+  script(src='/js/axios.min.js')
+  script(src='/js/manageUsers.js')

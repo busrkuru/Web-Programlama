@@ -1,17 +1,276 @@
-extends base
+doctype html
+html(lang='tr')
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    title Natours | Giriş Yap
+    
+    // Google Fonts
+    link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Lato:300,300i,700,400|Roboto:400,500,700')
+    
+    // Font Awesome
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css')
+    
+    // CSS dosyaları
+    link(rel='stylesheet', href='/css/style.css')
+    link(rel='stylesheet', href='/css/form.css')
+    
+    style.
+      .login-form {
+        max-width: 55rem;
+        margin: 0 auto;
+        padding: 5rem 7rem;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2.5rem 8rem 2rem rgba(0, 0, 0, 0.06);
+      }
+      
+      .form-description {
+        margin-bottom: 3rem;
+        color: #777;
+      }
+      
+      .form__group--signup {
+        text-align: center;
+        margin-top: 2rem;
+      }
+      
+      .form__link {
+        color: #55c57a;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      
+      .form__link:hover {
+        color: #28b485;
+      }
+      
+      .password-container {
+        position: relative;
+      }
+      
+      .password-toggle {
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #999;
+      }
+      
+      .password-toggle:hover {
+        color: #55c57a;
+      }
+      
+      .form__hint {
+        font-size: 1.2rem;
+        color: #999;
+        display: block;
+        margin-top: 0.5rem;
+      }
+      
+      .password-reset-link {
+        color: #55c57a;
+        text-decoration: none;
+      }
+      
+      .password-reset-link:hover {
+        text-decoration: underline;
+      }
+      
+      .main {
+        padding: 8rem 6rem;
+        background-color: #f7f7f7;
+        min-height: 100vh;
+      }
+      
+      .heading-secondary {
+        font-size: 2.25rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        background-image: linear-gradient(to right, #7ed56f, #28b485);
+        -webkit-background-clip: text;
+        color: transparent;
+        letter-spacing: 0.1rem;
+        line-height: 1.3;
+        display: inline-block;
+      }
+      
+      .ma-bt-lg {
+        margin-bottom: 3.5rem;
+      }
+      
+      .ma-bt-md {
+        margin-bottom: 2rem;
+      }
+      
+      .btn {
+        font-size: 1.6rem;
+        padding: 1.4rem 3rem;
+        border-radius: 10rem;
+        text-transform: uppercase;
+        display: inline-block;
+        text-decoration: none;
+        position: relative;
+        transition: all 0.4s;
+        font-weight: 400;
+        backface-visibility: hidden;
+        border: none;
+        cursor: pointer;
+      }
+      
+      .btn--green {
+        background-color: #55c57a;
+        color: #fff;
+      }
+      
+      .btn--green::after {
+        background-color: #55c57a;
+      }
+      
+      .btn--green:hover {
+        background-color: #28b485;
+      }
+  
+  body
+    // HEADER
+    header.header
+      nav.nav.nav--tours
+        a.nav__el(href='/') Tüm Turlar
+      .header__logo
+        img(src='/img/logo-white.png' alt='Natours logo')
+      nav.nav.nav--user
+        a.nav__el(href='/login') Giriş Yap
+        a.nav__el.nav__el--cta(href='/signup') Kayıt Ol
+    
+    main.main
+      .login-form
+        h2.heading-secondary.ma-bt-lg Hesabınıza Giriş Yapın
+        p.form-description Natours hesabınıza giriş yaparak rezervasyonlarınızı yönetin ve yeni turlar keşfedin.
+        
+        form.form.form--login#login-form
+          .form__group
+            label.form__label(for='email')
+              i.fas.fa-envelope
+              | Email Adresiniz
+            input#email.form__input(type='email', placeholder='ornek@email.com', required)
+          
+          .form__group.ma-bt-md
+            label.form__label(for='password')
+              i.fas.fa-lock
+              | Şifreniz
+            .password-container
+              input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+              i.password-toggle.fas.fa-eye
+            small.form__hint Şifrenizi mi unuttunuz? 
+              a.password-reset-link(href='/forgot-password') Şifre sıfırlama
+          
+          .form__group
+            button.btn.btn--green
+              i.fas.fa-sign-in-alt
+              | Giriş Yap
+          
+          .form__group.form__group--signup
+            p Hesabınız yok mu?
+            a.form__link(href='/signup') Hemen Kaydolun
+    
+    // FOOTER
+    footer.footer
+      .footer__logo
+        img(src='/img/logo-green.png' alt='Natours logo')
+      ul.footer__nav
+        li.footer__nav-item
+          a.footer__nav-link(href='#') Hakkımızda
+        li.footer__nav-item
+          a.footer__nav-link(href='#') İletişim
+        li.footer__nav-item
+          a.footer__nav-link(href='#') Kariyer
+        li.footer__nav-item
+          a.footer__nav-link(href='#') Gizlilik Politikası
+        li.footer__nav-item
+          a.footer__nav-link(href='#') Kullanım Şartları
+      p.footer__copyright &copy; by Natours. Tüm hakları saklıdır.
+    
+    // JavaScript
+    script(src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js')
+    script.
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded - Login page initialized');
+      
+        // Şifre gösterme/gizleme işlevi
+        const passwordInput = document.getElementById('password');
+        const passwordToggle = document.querySelector('.password-toggle');
 
-block content
-  main.main
-    .login-form
-      h2.heading-secondary.ma-bt-lg Hesabınıza giriş yapın
-      form.form.form--login
-        .form__group
-          label.form__label(for='email') Email
-          input#email.form__input(type='email', placeholder='you@example.com', required)
-        .form__group.ma-bt-md
-          label.form__label(for='password') Şifre
-          input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
-        .form__group
-          button.btn.btn--green Giriş Yap
-        .form__group
-          a.form__link(href="/signup") Hesabınız yok mu? Kaydolun
+        if (passwordToggle) {
+          console.log('Password toggle found');
+          passwordToggle.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            console.log('Password visibility toggled');
+          });
+        } else {
+          console.warn('Password toggle element not found');
+        }
+
+        // Form gönderimi
+        const loginForm = document.getElementById('login-form');
+        
+        if (loginForm) {
+          console.log('Login form found');
+          loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Form submission intercepted');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+              alert('Lütfen email ve şifre girin');
+              return;
+            }
+            
+            console.log('Form submitted with email:', email);
+            document.querySelector('.btn--green').textContent = 'Giriş yapılıyor...';
+            document.querySelector('.btn--green').disabled = true;
+            
+            try {
+              console.log('Sending login request to server...');
+              const res = await axios({
+                method: 'POST',
+                url: '/api/v1/users/login',
+                data: {
+                  email,
+                  password
+                }
+              });
+              
+              console.log('Server response received:', res.data);
+              
+              if (res.data.status === 'success') {
+                console.log('Login successful, token:', res.data.token ? 'Present' : 'Not present');
+                console.log('User data:', res.data.data ? JSON.stringify(res.data.data) : 'No user data');
+                
+                // Başarılı giriş bildirimi göster
+                alert('Giriş başarılı! Yönlendiriliyorsunuz...');
+                
+                // Kullanıcı rolüne göre yönlendirme yap
+                if (res.data.data && res.data.data.user && (res.data.data.user.role === 'admin' || res.data.data.user.role === 'lead-guide')) {
+                  console.log('Redirecting to admin page...');
+                  window.location.href = '/admin';
+                } else {
+                  console.log('Redirecting to home page...');
+                  window.location.href = '/';
+                }
+              }
+            } catch (err) {
+              console.error('Login error:', err.response?.data || err);
+              alert('Giriş başarısız: ' + (err.response?.data?.message || 'Email veya şifre hatalı'));
+              document.querySelector('.btn--green').textContent = 'Giriş Yap';
+              document.querySelector('.btn--green').disabled = false;
+            }
+          });
+        } else {
+          console.warn('Login form element not found');
+        }
+      });

@@ -1,0 +1,27 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .form-container
+        h2.heading-secondary.ma-bt-lg Kullanu0131cu0131 Du00fczenle
+        form.form.form--edit-user(data-user-id=`${user.id}`)
+          .form__group
+            label.form__label(for='name') Ad Soyad
+            input#name.form__input(type='text', value=`${user.name}`, required, name='name')
+          .form__group
+            label.form__label(for='email') Email
+            input#email.form__input(type='email', value=`${user.email}`, required, name='email')
+          .form__group
+            label.form__label(for='role') Kullanu0131cu0131 Rolu00fc
+            select#role.form__input(name='role', required)
+              each role in ['user', 'guide', 'lead-guide', 'admin']
+                if user.role === role
+                  option(value=`${role}`, selected)= role
+                else
+                  option(value=`${role}`)= role
+          .form__group
+            button.btn.btn--green.btn--save-user Kaydet
+
+block scripts
+  script(src='/js/editUser.js')

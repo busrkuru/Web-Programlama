@@ -10,21 +10,28 @@ router.use(authController.protect);
 
 router
   .route('/')
-  .get(reviewController.getAllReviews)
+  .get(
+    authController.restrictToResource('reviews', 'read'),
+    reviewController.getAllReviews
+  )
   .post(
-    authController.restrictTo('user'),
+    authController.restrictToResource('reviews', 'create'),
     reviewController.createReview
   );
 
 router
   .route('/:id')
-  .get(reviewController.getReview)
+  .get(
+    reviewController.getReview
+  )
   .patch(
-    authController.restrictTo('user', 'admin'),
+    authController.restrictToResource('reviews', 'update'),
+    authController.checkOwnership(require('../models/reviewModel')),
     reviewController.updateReview
   )
   .delete(
-    authController.restrictTo('user', 'admin'),
+    authController.restrictToResource('reviews', 'delete'),
+    authController.checkOwnership(require('../models/reviewModel')),
     reviewController.deleteReview
   );
 

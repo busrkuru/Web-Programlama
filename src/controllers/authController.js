@@ -4,16 +4,27 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 
+// JWT_SECRET değerini doğrudan tanımla
+const JWT_SECRET = process.env.JWT_SECRET || 'ultra-secure-and-ultra-long-secret-key-for-jwt';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '90d';
+
 // Token oluşturma fonksiyonu
 const signToken = id => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '90d'
+  console.log('[authController.js] JWT_SECRET:', JWT_SECRET ? 'Tanımlı' : 'Tanımlı değil');
+  return jwt.sign({ id }, JWT_SECRET, {
+    expiresIn: JWT_EXPIRES_IN
   });
 };
 
 // Oluşturulan token'ı cookie olarak gönderme
 const createSendToken = (user, statusCode, req, res) => {
+  console.log('[authController.js] createSendToken çağrıldı, statusCode:', statusCode);
+  console.log('[authController.js] Kullanıcı rolü:', user.role);
+  console.log('[authController.js] İstek URL:', req.originalUrl);
+  
   const token = signToken(user._id);
+  console.log('[authController.js] JWT token oluşturuldu');
+  
   const cookieOptions = {
     expires: new Date(
       Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 90) * 24 * 60 * 60 * 1000
@@ -27,13 +38,16 @@ const createSendToken = (user, statusCode, req, res) => {
 
   // Önce eski cookie'yi temizle
   res.clearCookie('jwt');
+  console.log('[authController.js] Eski JWT cookie temizlendi');
   
   // Yeni token'ı cookie olarak ekle
   res.cookie('jwt', token, cookieOptions);
+  console.log('[authController.js] Yeni JWT cookie ayarlandı');
 
   // Session'a kullanıcıyı ekle
   if (res.req && res.req.session) {
     res.req.session.user = user;
+    console.log('[authController.js] Kullanıcı session\'a eklendi');
   }
 
   // Remove password from output
@@ -41,6 +55,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
   // API isteği ise JSON yanıtı gönder
   if (req.originalUrl.startsWith('/api')) {
+    console.log('[authController.js] API isteği, JSON yanıtı gönderiliyor');
     return res.status(statusCode).json({
       status: 'success',
       token,
@@ -50,10 +65,17 @@ const createSendToken = (user, statusCode, req, res) => {
     });
   }
   
-  // Tarayıcı isteği ise daima ana sayfaya yönlendir
-  const redirectUrl = '/';
+  // Kullanıcı rolüne göre farklı sayfalara yönlendir
+  let redirectUrl = '/';
   
-  // Tarayıcı isteği ise daima /modern sayfasına yönlendir
+  // Admin ve lead-guide rolündeki kullanıcıları admin paneline yönlendir
+  if (user.role === 'admin' || user.role === 'lead-guide') {
+    redirectUrl = '/admin';
+  }
+  
+  console.log('[authController.js] Tarayıcı isteği, yönlendirme yapılıyor:', redirectUrl);
+  
+  // Tarayıcı isteğini yönlendir
   res.redirect(redirectUrl);
   
   // Giriş sonrası returnTo bilgisini temizle
@@ -79,24 +101,39 @@ exports.signup = async (req, res, next) => {
 
 // Kullanıcı girişi
 exports.login = async (req, res, next) => {
+  console.log('[authController.js] Login işlemi başlatıldı');
+  console.log('[authController.js] İstek gövdesi:', req.body);
+  
   try {
     const { email, password } = req.body;
 
     // 1) Email ve şifre var mı kontrol et
     if (!email || !password) {
+      console.log('[authController.js] Email veya şifre eksik');
       return next(new AppError('Lütfen email ve şifre girin', 400));
     }
 
     // 2) Kullanıcı var mı ve şifre doğru mu kontrol et
+    console.log('[authController.js] Kullanıcı aranıyor:', email);
     const user = await User.findOne({ email }).select('+password');
 
-    if (!user || !(await user.correctPassword(password, user.password))) {
+    if (!user) {
+      console.log('[authController.js] Kullanıcı bulunamadı:', email);
+      return next(new AppError('Hatalı email veya şifre', 401));
+    }
+    
+    const isPasswordCorrect = await user.correctPassword(password, user.password);
+    console.log('[authController.js] Şifre kontrolü:', isPasswordCorrect ? 'Başarılı' : 'Başarısız');
+    
+    if (!isPasswordCorrect) {
       return next(new AppError('Hatalı email veya şifre', 401));
     }
 
     // 3) Her şey doğruysa, token oluştur ve giriş yap
+    console.log('[authController.js] Giriş başarılı, token oluşturuluyor...');
     createSendToken(user, 200, req, res);
   } catch (err) {
+    console.error('[authController.js] Login hatası:', err);
     next(new AppError(err.message, 400));
   }
 };
@@ -147,64 +184,78 @@ exports.protect = async (req, res, next) => {
 
     if (!token) {
       return next(
-        new AppError('Giriş yapmadınız! Lütfen giriş yaparak tekrar deneyin.', 401)
+        new AppError('Giriş yapmadınız! Lütfen giriş yapın', 401)
       );
     }
 
     // 2) Token doğrulama
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    console.log('[authController.js] Token doğrulanıyor...');
+    const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
+    console.log('[authController.js] Token doğrulandı, kullanıcı ID:', decoded.id);
 
-    // 3) Kullanıcı hala mevcut mu kontrol et
+    // 3) Kullanıcı hala var mı kontrol et
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
+      console.log('[authController.js] Kullanıcı bulunamadı:', decoded.id);
       return next(
-        new AppError('Bu token ile ilişkili kullanıcı artık mevcut değil.', 401)
+        new AppError('Bu token\'a ait kullanıcı artık mevcut değil', 401)
       );
     }
+    console.log('[authController.js] Kullanıcı bulundu:', currentUser.email);
 
-    // 4) Kullanıcı şifreyi token verildikten sonra değiştirdi mi kontrol et
+    // 4) Kullanıcı şifresini token verildikten sonra değiştirdi mi kontrol et
     if (currentUser.changedPasswordAfter(decoded.iat)) {
+      console.log('[authController.js] Şifre değiştirilmiş');
       return next(
-        new AppError('Kullanıcı yakın zamanda şifresini değiştirdi. Lütfen tekrar giriş yapın.', 401)
+        new AppError('Kullanıcı yakın zamanda şifresini değiştirdi, lütfen tekrar giriş yapın', 401)
       );
     }
 
-    // ERIŞIME IZIN VER
+    // Erişim izni ver
     req.user = currentUser;
     res.locals.user = currentUser;
+    console.log('[authController.js] Erişim izni verildi');
     next();
   } catch (err) {
-    next(new AppError('Doğrulama hatası: ' + err.message, 401));
+    console.error('[authController.js] Yetkilendirme hatası:', err);
+    next(new AppError('Yetkilendirme hatası', 401));
   }
 };
 
 // Sadece giriş yapmış kullanıcıların görüntülemesi için
 exports.isLoggedIn = async (req, res, next) => {
+  console.log('[authController.js] isLoggedIn middleware çağrıldı, path:', req.originalUrl);
+  
   if (req.cookies.jwt && req.cookies.jwt !== 'loggedout') {
+    console.log('[authController.js] JWT cookie bulundu');
+    
     try {
-      // 1) Token doğrulama
-      const decoded = await promisify(jwt.verify)(
-        req.cookies.jwt,
-        process.env.JWT_SECRET
-      );
-
-      // 2) Kullanıcı hala mevcut mu kontrol et
+      // JWT_SECRET kullan
+      const decoded = await promisify(jwt.verify)(req.cookies.jwt, JWT_SECRET);
+      console.log('[authController.js] JWT doğrulandı, kullanıcı ID:', decoded.id);
+      
       const currentUser = await User.findById(decoded.id);
+      
       if (!currentUser) {
+        console.log('[authController.js] Kullanıcı bulunamadı');
         return next();
       }
-
-      // 3) Kullanıcı şifreyi token verildikten sonra değiştirdi mi kontrol et
+      
+      console.log('[authController.js] Kullanıcı bulundu:', currentUser.email);
+      
       if (currentUser.changedPasswordAfter(decoded.iat)) {
+        console.log('[authController.js] Şifre değiştirilmiş');
         return next();
       }
-
-      // KULLANICI GİRİŞ YAPMIŞ
+      
+      // Kullanıcıyı locals ve session'a ekle
       res.locals.user = currentUser;
       req.user = currentUser;
+      if (req.session) {
+        req.session.user = currentUser;
+      }
       
-      // Session'a kullanıcıyı ekle
-      req.session.user = currentUser;
+      console.log('[authController.js] Kullanıcı oturum açmış olarak işaretlendi');
       
       return next();
     } catch (err) {
@@ -225,6 +276,112 @@ exports.restrictTo = (...roles) => {
     }
 
     next();
+  };
+};
+
+// Belirli bir kaynaga erişim için rol kontrolü
+exports.restrictToResource = (resource, action) => {
+  return (req, res, next) => {
+    // Rol izinleri matrisi
+    const permissions = {
+      admin: {
+        all: ['read', 'create', 'update', 'delete', 'manage']
+      },
+      'lead-guide': {
+        tours: ['read', 'create', 'update'],
+        users: ['read'],
+        reviews: ['read', 'delete'],
+        bookings: ['read', 'create', 'update']
+      },
+      guide: {
+        tours: ['read'],
+        reviews: ['read'],
+        bookings: ['read']
+      },
+      user: {
+        tours: ['read'],
+        reviews: ['read', 'create', 'update', 'delete'],  // Kendi yorumlarını düzenleyebilir/silebilir
+        bookings: ['read', 'create']  // Kendi rezervasyonlarını yapabilir ve görebilir
+      }
+    };
+
+    const userRole = req.user.role;
+    
+    // Admin tüm kaynaklara tam erişimine sahip
+    if (userRole === 'admin') {
+      return next();
+    }
+    
+    // Diğer roller için izin kontrolü
+    const rolePermissions = permissions[userRole];
+    
+    // Rol için izinler tanımlı değilse erişim engellenir
+    if (!rolePermissions) {
+      return next(new AppError('Bu işlemi gerçekleştirmek için yetkiniz yok', 403));
+    }
+    
+    // Kaynak için izinler tanımlı değilse erişim engellenir
+    const resourcePermissions = rolePermissions[resource] || [];
+    
+    // İstenen eylem için izin yoksa erişim engellenir
+    if (!resourcePermissions.includes(action)) {
+      return next(new AppError(`${resource} kaynağı üzerinde ${action} işlemi için yetkiniz yok`, 403));
+    }
+    
+    next();
+  };
+};
+
+// Kullanıcı sahipliği kontrolü
+exports.checkOwnership = (Model, paramIdField = 'id') => {
+  return async (req, res, next) => {
+    try {
+      // Admin ve lead-guide her kaynağa erişebilir
+      if (['admin', 'lead-guide'].includes(req.user.role)) {
+        return next();
+      }
+      
+      // Parametre ID'sini al
+      const resourceId = req.params[paramIdField];
+      if (!resourceId) {
+        return next(new AppError('Kaynak ID bulunamadı', 400));
+      }
+      
+      // Kaynağı bul
+      const resource = await Model.findById(resourceId);
+      
+      if (!resource) {
+        return next(new AppError('Bu ID ile kaynak bulunamadı', 404));
+      }
+      
+      // Kullanıcı sahipliğini kontrol et
+      let isOwner = false;
+      
+      // Booking modeli için
+      if (Model.modelName === 'Booking' && resource.user) {
+        isOwner = resource.user.toString() === req.user.id;
+      }
+      
+      // Review modeli için
+      else if (Model.modelName === 'Review' && resource.user) {
+        isOwner = resource.user.toString() === req.user.id;
+      }
+      
+      // Diğer modeller için
+      else if (resource.user) {
+        isOwner = resource.user.toString() === req.user.id;
+      }
+      
+      if (!isOwner) {
+        return next(new AppError('Bu kaynağa erişim yetkiniz yok', 403));
+      }
+      
+      // Kaynağı request nesnesine ekle
+      req.resource = resource;
+      next();
+    } catch (err) {
+      next(new AppError(err.message, 500));
+    }
   };
 };
 

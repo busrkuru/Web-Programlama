@@ -23,18 +23,31 @@ router.get('/me', userController.getMe, userController.getUser);
 router.patch('/updateMe', fileUpload.uploadUserPhoto, fileUpload.resizeUserPhoto, userController.updateMe);
 router.delete('/deleteMe', userController.deleteMe);
 
-// Sadece adminlerin erişebileceği rotalar
-router.use(authController.restrictTo('admin'));
-
+// Kullanıcı yönetimi rotaları
 router
   .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+  .get(
+    authController.restrictToResource('users', 'read'),
+    userController.getAllUsers
+  )
+  .post(
+    authController.restrictToResource('users', 'create'),
+    userController.createUser
+  );
 
 router
   .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .get(
+    authController.restrictToResource('users', 'read'),
+    userController.getUser
+  )
+  .patch(
+    authController.restrictToResource('users', 'update'),
+    userController.updateUser
+  )
+  .delete(
+    authController.restrictToResource('users', 'delete'),
+    userController.deleteUser
+  );
 
 module.exports = router;

@@ -1,0 +1,55 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .booking-details
+        h2.heading-secondary.ma-bt-lg Rezervasyon Detayları
+        
+        .booking-info
+          .booking-info__header
+            h3.heading-tertiary Rezervasyon Bilgileri
+            span.booking-status(class=`status-badge ${booking.paid ? 'status-badge--success' : 'status-badge--warning'}`)= booking.paid ? 'Tamamlandı' : 'Bekliyor'
+          
+          .booking-info__data
+            .booking-info__item
+              span.booking-info__label Rezervasyon ID
+              span.booking-info__value= booking._id
+            .booking-info__item
+              span.booking-info__label Tarih
+              span.booking-info__value= booking.createdAt.toLocaleDateString('tr-TR')
+            .booking-info__item
+              span.booking-info__label Fiyat
+              span.booking-info__value= `${booking.price} ₺`
+        
+        if booking.tour
+          .tour-info
+            h3.heading-tertiary Tur Bilgileri
+            .tour-info__data
+              if booking.tour.imageCover
+                img.tour-info__img(src=`/img/tours/${booking.tour.imageCover}`, alt=`${booking.tour.name}`)
+              .tour-info__details
+                h4.tour-info__name= booking.tour.name
+                p.tour-info__duration= `${booking.tour.duration} gün`
+                p.tour-info__difficulty= booking.tour.difficulty
+                a.btn.btn--small(href=`/tour/${booking.tour.slug}`) Tur Sayfasına Git
+        
+        if booking.user
+          .user-info
+            h3.heading-tertiary Kullanıcı Bilgileri
+            .user-info__data
+              if booking.user.photo
+                img.user-info__img(src=`/img/users/${booking.user.photo}`, alt=`${booking.user.name}`)
+              else
+                img.user-info__img(src='/img/users/default.jpg', alt='Default user')
+              .user-info__details
+                h4.user-info__name= booking.user.name
+                p.user-info__email= booking.user.email
+                p.user-info__role= booking.user.role
+        
+        .booking-actions
+          button.btn.btn--green.btn--booking-paid(data-booking-id=`${booking._id}`, class=booking.paid ? 'disabled' : '')= booking.paid ? 'Ödeme Tamamlandı' : 'Ödemeyi Onayla'
+          button.btn.btn--red.btn--booking-cancel(data-booking-id=`${booking._id}`) Rezervasyonu İptal Et
+
+block scripts
+  script(src='/js/bookingDetails.js')

@@ -1,0 +1,43 @@
+extends base
+
+block content
+  main.main
+    .card-container
+      .admin-actions
+        h1.heading-primary Rezervasyon Yönetimi
+      
+      table.table
+        thead
+          tr
+            th Tur
+            th Kullanıcı
+            th Fiyat
+            th Tarih
+            th Durum
+            th İşlemler
+        tbody#bookings-table-body
+          each booking in bookings
+            tr
+              td
+                if booking.tour
+                  a(href=`/tours/${booking.tour.slug}`)= booking.tour.name
+                else
+                  span.text-muted Tur silinmiş
+              td
+                if booking.user
+                  span= booking.user.name
+                else
+                  span.text-muted Kullanıcı silinmiş
+              td= `${booking.price} ₺`
+              td= booking.createdAt.toLocaleDateString('tr-TR')
+              td
+                span(class=`status-badge ${booking.paid ? 'status-badge--success' : 'status-badge--warning'}`)= booking.paid ? 'Tamamlandı' : 'Bekliyor'
+              td.table-actions
+                button.btn.btn--small.btn--blue.edit-booking-btn(data-booking-id=`${booking._id}`) Detaylar
+                button.btn.btn--small.btn--red.delete-booking-btn(data-booking-id=`${booking._id}`) İptal Et
+      
+      #booking-form-container
+
+block append scripts
+  script(src='/js/axios.min.js')
+  script(src='/js/manageBookings.js')

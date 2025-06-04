@@ -4,8 +4,20 @@ const dotenv = require('dotenv');
 // Uncaught exception handler
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-  console.log(err.name, err.message);
-  process.exit(1);
+  console.log('Hata Adı:', err.name);
+  console.log('Hata Mesajı:', err.message);
+  console.log('Hata Yığını:', err.stack);
+  
+  // Hatanın kaynağını bulmak için özel kontroller
+  if (err.message && err.message.includes('imageCover')) {
+    console.log('imageCover ile ilgili bir hata tespit edildi!');
+    console.log('Hata muhtemelen bir tur verisi işlenirken oluştu.');
+  }
+  
+  // Sunucuyu hemen kapatmak yerine 1 saniye bekle
+  setTimeout(() => {
+    process.exit(1);
+  }, 1000);
 });
 
 // Config environment variables
@@ -35,7 +47,17 @@ const server = app.listen(port, () => {
 // Unhandled rejection handler
 process.on('unhandledRejection', (err) => {
   console.log('UNHANDLED REJECTION! 💥 Shutting down...');
-  console.log(err.name, err.message);
+  console.log('Hata Adı:', err.name);
+  console.log('Hata Mesajı:', err.message);
+  console.log('Hata Yığını:', err.stack);
+  
+  // Hatanın kaynağını bulmak için özel kontroller
+  if (err.message && err.message.includes('imageCover')) {
+    console.log('imageCover ile ilgili bir hata tespit edildi!');
+    console.log('Hata muhtemelen bir tur verisi işlenirken oluştu.');
+  }
+  
+  // Sunucuyu nazikçe kapat
   server.close(() => {
     process.exit(1);
   });
